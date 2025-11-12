@@ -168,14 +168,54 @@ export class DeviceManagerService {
             throw new Error('No registered device to heartbeat');
         }
 
+        console.log('💓 Performing heartbeat check...');
+
         // Use getOnlineDevices as heartbeat mechanism
-        const onlineDevices = await signatureApiService.getOnlineDevices();
+        const onlineDevicesResponse = await signatureApiService.getOnlineDevices();
+        
+        console.log('💓 Raw online devices response:', onlineDevicesResponse);
+        
+        // Ensure we have a valid array
+        let onlineDevices: any[] = [];
+        if (Array.isArray(onlineDevicesResponse)) {
+            onlineDevices = onlineDevicesResponse;
+        } else if (onlineDevicesResponse && Array.isArray((onlineDevicesResponse as any).data)) {
+            onlineDevices = (onlineDevicesResponse as any).data;
+        } else if (onlineDevicesResponse && typeof onlineDevicesResponse === 'object') {
+            // If it's an object, try to extract array from common properties
+            const resp = onlineDevicesResponse as any;
+            onlineDevices = resp.devices || resp.items || [];
+        }
+        
+        console.log('💓 Processed online devices array:', onlineDevices, 'Length:', onlineDevices.length);
+        
+        if (!Array.isArray(onlineDevices)) {
+            console.error('💓 Error: onlineDevices is not an array:', typeof onlineDevicesResponse, onlineDevicesResponse);
+            throw new Error('Invalid response format from getOnlineDevices');
+        }
         
         // Check if our device is in the online list
-        const ourDevice = onlineDevices.find(d => 
-            d.deviceName === this.registeredDevice?.deviceName ||
-            d.id === this.registeredDevice?.id
-        );
+        console.log('💓 Looking for device:', {
+            registeredDeviceName: this.registeredDevice?.deviceName,
+            registeredDeviceId: this.registeredDevice?.id
+        });
+        
+        const ourDevice = onlineDevices.find(d => {
+            const nameMatch = d.deviceName === this.registeredDevice?.deviceName;
+            const idMatch = d.id === this.registeredDevice?.id;
+            
+            console.log('💓 Checking device:', {
+                apiDeviceName: d.deviceName,
+                apiDeviceId: d.id,
+                nameMatch,
+                idMatch,
+                isOnline: d.isOnline
+            });
+            
+            return nameMatch || idMatch;
+        });
+
+        console.log('💓 Found device:', ourDevice);
 
         if (!ourDevice) {
             throw new Error('Device not found in online devices list');
@@ -183,6 +223,20 @@ export class DeviceManagerService {
 
         if (!ourDevice.isOnline) {
             throw new Error('Device marked as offline');
+        }
+
+        // Additional validation: Check if device name matches exactly
+        if (ourDevice.deviceName !== this.registeredDevice?.deviceName) {
+            console.warn('⚠️ Device name mismatch detected:', {
+                expected: this.registeredDevice?.deviceName,
+                actual: ourDevice.deviceName,
+                deviceId: ourDevice.id
+            });
+            
+            // If only ID matched but name is different, consider it suspicious
+            if (ourDevice.id === this.registeredDevice?.id) {
+                throw new Error(`Device ID matches but name changed: expected '${this.registeredDevice?.deviceName}' but got '${ourDevice.deviceName}'`);
+            }
         }
 
         console.log('💓 Heartbeat successful - device is online');
@@ -195,10 +249,31 @@ export class DeviceManagerService {
         try {
             if (!this.registeredDevice) return false;
 
-            const onlineDevices = await signatureApiService.getOnlineDevices();
-            const ourDevice = onlineDevices.find(d => 
-                d.deviceName === this.registeredDevice?.deviceName
-            );
+            const onlineDevicesResponse = await signatureApiService.getOnlineDevices();
+            
+            // Ensure we have a valid array
+            let onlineDevices: any[] = [];
+            if (Array.isArray(onlineDevicesResponse)) {
+                onlineDevices = onlineDevicesResponse;
+            } else if (onlineDevicesResponse && Array.isArray((onlineDevicesResponse as any).data)) {
+                onlineDevices = (onlineDevicesResponse as any).data;
+            } else if (onlineDevicesResponse && typeof onlineDevicesResponse === 'object') {
+                const resp = onlineDevicesResponse as any;
+                onlineDevices = resp.devices || resp.items || [];
+            }
+            
+            if (!Array.isArray(onlineDevices)) {
+                console.error('💓 Error in checkDeviceStatus: onlineDevices is not an array:', typeof onlineDevicesResponse, onlineDevicesResponse);
+                return false;
+            }
+
+            const ourDevice = onlineDevices.find(d => {
+                const nameMatch = d.deviceName === this.registeredDevice?.deviceName;
+                const idMatch = d.id === this.registeredDevice?.id;
+                
+                // For status check, require both name and ID to match for security
+                return nameMatch && idMatch;
+            });
 
             return ourDevice?.isOnline ?? false;
         } catch {

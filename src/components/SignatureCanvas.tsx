@@ -72,7 +72,13 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     const startDrawing = useCallback((event: React.MouseEvent | React.TouchEvent) => {
         if (disabled || !context) return;
 
-        event.preventDefault();
+        // Only preventDefault for non-passive events
+        if ('touches' in event) {
+            // For touch events, rely on CSS touch-action: none instead
+        } else {
+            event.preventDefault();
+        }
+        
         const { x, y } = getPosition(event);
         
         setIsDrawing(true);
@@ -84,7 +90,13 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     const draw = useCallback((event: React.MouseEvent | React.TouchEvent) => {
         if (!isDrawing || disabled || !context) return;
 
-        event.preventDefault();
+        // Only preventDefault for non-passive events
+        if ('touches' in event) {
+            // For touch events, rely on CSS touch-action: none instead
+        } else {
+            event.preventDefault();
+        }
+        
         const { x, y } = getPosition(event);
         
         context.lineTo(x, y);
@@ -143,7 +155,9 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                     ref={canvasRef}
                     style={{
                         display: 'block',
-                        touchAction: 'none', // Prevent scrolling on touch devices
+                        touchAction: 'none', // Prevent scrolling and enable preventDefault alternative
+                        userSelect: 'none', // Prevent text selection
+                        WebkitUserSelect: 'none', // Safari support
                     }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
