@@ -26,7 +26,7 @@ import {
     Stop,
     PlayArrow
 } from '@mui/icons-material';
-import { useDeviceManager } from '../hooks/useDeviceManager';
+import { useDeviceManagerContext } from '../contexts/deviceManagerContext';
 import { useSignatureRequest } from '../hooks/useSignatureRequest';
 import { SignatureRequestDialog } from './SignatureRequestDialog';
 import { clearDeviceInfo } from '../utils/deviceInfo';
@@ -55,6 +55,7 @@ const stepProgress = {
 export const DeviceManagerDemo: React.FC = () => {
     const [onlineDevices, setOnlineDevices] = useState<RegisterDeviceResponse[]>([]);
 
+    // Use shared device manager context instead of creating a new instance
     const {
         // State
         isRegistering,
@@ -74,21 +75,7 @@ export const DeviceManagerDemo: React.FC = () => {
         disconnect,
         retry,
         getOnlineDevices
-    } = useDeviceManager({
-        autoRegister: false, // Manual control for demo
-        autoConnect: true,
-        autoHeartbeat: true,
-        heartbeatInterval: 15000, // 15 seconds for demo
-        onRegistrationComplete: (result) => {
-            console.log('Registration completed:', result);
-        },
-        onSignalRConnected: (connectionId) => {
-            console.log('SignalR connected with ID:', connectionId);
-        },
-        onReady: () => {
-            console.log('Device is ready!');
-        }
-    });
+    } = useDeviceManagerContext();
 
     // Signature request handling
     const {
@@ -133,6 +120,8 @@ export const DeviceManagerDemo: React.FC = () => {
         const testData: SignatureMessageData = {
             patronId: 12345,
             requestId: `test_${Date.now()}`,
+            sessionId: `session_${Date.now()}`,
+            staffDeviceId: deviceInfo?.staffDeviceId || 'test_device_id',
             patronName: 'John Doe',
             documentType: 'ID Verification',
             message: 'Please provide your signature to verify your identity for account access.',
@@ -156,6 +145,14 @@ export const DeviceManagerDemo: React.FC = () => {
             <Typography variant="h4" gutterBottom sx={{ mb: 4, textAlign: 'center' }}>
                 🔧 Device Manager Demo
             </Typography>
+
+            {/* Auto Registration Notice */}
+            <Alert severity="info" sx={{ mb: 3 }}>
+                <Typography variant="body2">
+                    <strong>✨ Auto Mode:</strong> Device automatically registers and connects when the app starts. 
+                    No manual action needed! Monitor the status below.
+                </Typography>
+            </Alert>
 
             {/* Current Status Card */}
             <Card elevation={4} sx={{ mb: 3 }}>
@@ -233,12 +230,12 @@ export const DeviceManagerDemo: React.FC = () => {
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                         <Button
                             variant="contained"
-                            color="primary"
-                            startIcon={<PlayArrow />}
+                            color={isReady ? "success" : "primary"}
+                            startIcon={isReady ? <CheckCircle /> : <PlayArrow />}
                             onClick={registerDevice}
                             disabled={isRegistering || isReady}
                         >
-                            {isRegistering ? 'Registering...' : 'Start Registration Flow'}
+                            {isRegistering ? 'Auto Registering...' : isReady ? 'Device Ready' : 'Manual Register'}
                         </Button>
 
                         <Button

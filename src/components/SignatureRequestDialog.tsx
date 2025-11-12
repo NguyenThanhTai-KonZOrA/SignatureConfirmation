@@ -44,6 +44,7 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
 }) => {
     const [signature, setSignature] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
@@ -53,12 +54,12 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
 
         const requestTime = new Date(data.timestamp);
         const expiryTime = new Date(requestTime.getTime() + data.expiryMinutes * 60 * 1000);
-        
+
         const updateTimer = () => {
             const now = new Date();
             const remaining = Math.max(0, Math.floor((expiryTime.getTime() - now.getTime()) / 1000));
             setTimeLeft(remaining);
-            
+
             if (remaining <= 0) {
                 setError('Signature request has expired');
             }
@@ -76,8 +77,20 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
             setSignature('');
             setError(null);
             setIsSubmitting(false);
+            setIsSubmitted(false);
         }
     }, [open]);
+
+    // Auto-close dialog when successfully submitted
+    useEffect(() => {
+        if (isSubmitted && !isSubmitting) {
+            console.log('🔒 Auto-closing dialog after successful submission');
+            const timer = setTimeout(() => {
+                onClose();
+            }, 500); // Small delay to show success state
+            return () => clearTimeout(timer);
+        }
+    }, [isSubmitted, isSubmitting, onClose]);
 
     const formatTimeLeft = (seconds: number): string => {
         const mins = Math.floor(seconds / 60);
@@ -101,39 +114,78 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
 
         try {
             const request: SignatureConfirmRequest = {
-                requestId: data.requestId,
+                sessionId: data.sessionId,
                 patronId: data.patronId,
                 signature: signature.trim(),
-                deviceName: deviceName,
-                timestamp: new Date().toISOString()
+                staffDeviceId: data.staffDeviceId
             };
 
+            console.log('🔄 Submitting signature request:', request);
+            
             const response = await signatureApiService.submitSignature(request);
             
-            if (response.success) {
+            console.log('📥 Full API response:', response);
+            console.log('📥 Response success:', response?.success);
+            
+            // Always check response exists first
+            if (!response) {
+                throw new Error('No response received from API');
+            }
+
+            // Check success field explicitly
+            if (response.success === true) {
                 console.log('✅ Signature submitted successfully:', response);
-                onSubmitted?.(data.requestId);
-                onClose();
+                
+                // Mark as submitted
+                setIsSubmitted(true);
+                
+                // Notify success callback first
+                if (onSubmitted) {
+                    try {
+                        onSubmitted(data.sessionId);
+                    } catch (callbackError) {
+                        console.warn('⚠️ onSubmitted callback error:', callbackError);
+                    }
+                }
+                
+                // Force close dialog after short delay to ensure state updates
+                setTimeout(() => {
+                    console.log('🔒 Forcing dialog close');
+                    onClose();
+                }, 100);
+                
             } else {
-                setError(response.message || 'Failed to submit signature');
-                onError?.(response.message || 'Failed to submit signature');
+                const errorMsg = response.message || `API returned success=${response.success}`;
+                console.log('❌ API returned non-success:', errorMsg, response);
+                setError(errorMsg);
+                if (onError) {
+                    onError(errorMsg);
+                }
             }
 
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to submit signature';
             console.error('❌ Error submitting signature:', err);
             setError(errorMessage);
-            onError?.(errorMessage);
+            if (onError) {
+                onError(errorMessage);
+            }
         } finally {
             setIsSubmitting(false);
         }
-    }, [data, signature, timeLeft, deviceName, onSubmitted, onError, onClose]);
+    }, [data, signature, timeLeft, onSubmitted, onError, onClose]);
 
     const handleClose = useCallback(() => {
-        if (!isSubmitting) {
+        console.log('🚪 Handle close called', { isSubmitting, isSubmitted });
+        
+        // Allow force close if submitted successfully or not submitting
+        if (!isSubmitting || isSubmitted) {
+            console.log('🚪 Closing dialog');
             onClose();
+        } else {
+            console.log('🚫 Prevented close - still submitting');
         }
-    }, [isSubmitting, onClose]);
+    }, [isSubmitting, isSubmitted, onClose]);
 
     if (!data) return null;
 
@@ -154,7 +206,7 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
                         Signature Request
                     </Typography>
                 </Box>
-                
+
                 {timeLeft !== null && (
                     <Chip
                         icon={<Schedule />}
@@ -232,6 +284,13 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
                         </Alert>
                     )}
 
+                    {/* Success Message */}
+                    {isSubmitted && (
+                        <Alert severity="success">
+                            ✅ Signature submitted successfully! Dialog will close automatically...
+                        </Alert>
+                    )}
+
                     {/* Request Info */}
                     <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
                         <Typography variant="caption" color="text.secondary" display="block">
@@ -250,21 +309,21 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
             <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
                 <Button
                     onClick={handleClose}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isSubmitted}
                     startIcon={<Close />}
                     color="inherit"
                 >
-                    Cancel
+                    {isSubmitted ? 'Closing...' : 'Cancel'}
                 </Button>
                 <Button
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !signature.trim() || isExpired}
+                    disabled={isSubmitting || isSubmitted || !signature.trim() || isExpired}
                     startIcon={isSubmitting ? <CircularProgress size={16} /> : <Send />}
                     variant="contained"
-                    color="primary"
+                    color={isSubmitted ? "success" : "primary"}
                     sx={{ minWidth: 120 }}
                 >
-                    {isSubmitting ? 'Submitting...' : 'Submit Signature'}
+                    {isSubmitted ? 'Submitted!' : isSubmitting ? 'Submitting...' : 'Submit Signature'}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -8,17 +8,27 @@ const api = axios.create({
     headers: { "Content-Type": "application/json" }
 });
 
-type ApiEnvelope<T> = {
-    status: number;
-    data: T;
-    success: boolean;
-};
-
-function unwrapApiEnvelope<T>(response: { data: ApiEnvelope<T> }): T {
-    if (!response.data.success) {
-        throw new Error("API call failed");
+function unwrapApiEnvelope<T>(response: { data: any }): T {
+    console.log('🔧 API Response unwrapping:', response.data);
+    
+    // Handle different response formats
+    if (response.data) {
+        // Format 1: { status, data, success }
+        if (typeof response.data.success !== 'undefined') {
+            if (!response.data.success) {
+                throw new Error(response.data.message || "API call failed");
+            }
+            return response.data.data || response.data;
+        }
+        
+        // Format 2: Direct data
+        if (typeof response.data === 'object' && response.data !== null) {
+            return response.data;
+        }
     }
-    return response.data.data;
+    
+    // Format 3: Response itself is the data
+    return response.data;
 }
 
 // Add request interceptor for cache busting on GET requests
@@ -63,10 +73,39 @@ export const signatureApiService = {
 
     submitSignature: async (data: SignatureConfirmRequest): Promise<SignatureConfirmResponse> => {
         try {
-            const response = await api.post('/api/PatronDevice/submit-signature', data);
-            return unwrapApiEnvelope(response);
+            const response = await api.post('/api/CustomerSign/submit-signature', data);
+            
+            const result = unwrapApiEnvelope(response);
+            // Ensure we return a properly formatted SignatureConfirmResponse
+            if (result && typeof result === 'object') {
+                const resultObj = result as any;
+                return {
+                    success: resultObj.success ?? true, // Default to true if success field missing
+                    message: resultObj.message || 'Signature submitted successfully',
+                    requestId: resultObj.requestId || data.sessionId,
+                    timestamp: resultObj.timestamp || new Date().toISOString()
+                };
+            } else {
+                return {
+                    success: true,
+                    message: 'Signature submitted successfully',
+                    requestId: data.sessionId,
+                    timestamp: new Date().toISOString()
+                };
+            }
         } catch (error) {
-            console.error('Error submitting signature:', error);
+            console.error('❌ Error submitting signature:', error);
+            
+            // Check if it's an axios error with response
+            if (axios.isAxiosError(error) && error.response) {
+                return {
+                    success: false,
+                    message: error.response.data?.message || `HTTP ${error.response.status}: ${error.response.statusText}`,
+                    requestId: data.sessionId,
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
             throw error;
         }
     },

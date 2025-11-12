@@ -105,14 +105,15 @@ export interface SignatureMessageData {
     message: string;
     timestamp: string;
     expiryMinutes?: number;
+    sessionId: string;
+    staffDeviceId: string;
 }
 
 export interface SignatureConfirmRequest {
-    requestId: string;
+    sessionId: string;
     patronId: number;
     signature: string;
-    deviceName: string;
-    timestamp: string;
+    staffDeviceId: string;
 }
 
 export interface SignatureConfirmResponse {
