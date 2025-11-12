@@ -1,12 +1,12 @@
 import React from 'react';
 import { useSignatureRequest } from '../hooks/useSignatureRequest';
-import { SignatureRequestDialog } from './SignatureRequestDialog';
 import { useDeviceManagerContext } from '../contexts/deviceManagerContext';
 
 /**
  * Global signature request handler component
  * This component should be placed at app level to handle signature requests globally
  * Uses shared device manager context to avoid multiple instances
+ * NOTE: Dialog is disabled here - SignatureConfirmation page handles the UI
  */
 export const SignatureRequestHandler: React.FC = () => {
     const { 
@@ -16,15 +16,10 @@ export const SignatureRequestHandler: React.FC = () => {
         currentStep 
     } = useDeviceManagerContext();
     
-    const {
-        currentRequest,
-        isDialogOpen,
-        closeSignatureDialog,
-        handleSignatureSubmitted,
-        handleSignatureError
-    } = useSignatureRequest({
+    // Initialize signature request handling (for logging only)
+    useSignatureRequest({
         onSignatureRequest: (data) => {
-            console.log('📝 New signature request received:', data);
+            console.log('📝 New signature request received (handled by SignatureConfirmation page):', data);
         },
         onSignatureSubmitted: (requestId) => {
             console.log('✅ Signature submitted successfully:', requestId);
@@ -32,7 +27,7 @@ export const SignatureRequestHandler: React.FC = () => {
         onSignatureError: (error, requestId) => {
             console.error('❌ Signature submission failed:', error, requestId);
         },
-        autoShowDialog: true
+        autoShowDialog: false // Disabled - SignatureConfirmation page handles dialog
     });
 
     // Log current status for debugging
@@ -45,14 +40,6 @@ export const SignatureRequestHandler: React.FC = () => {
         });
     }, [currentStep, isReady, error, deviceInfo]);
 
-    return (
-        <SignatureRequestDialog
-            open={isDialogOpen}
-            data={currentRequest}
-            deviceName={deviceInfo?.deviceName || 'Unknown Device'}
-            onClose={closeSignatureDialog}
-            onSubmitted={handleSignatureSubmitted}
-            onError={handleSignatureError}
-        />
-    );
+    // No dialog rendered - SignatureConfirmation page handles the UI
+    return null;
 };
