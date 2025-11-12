@@ -12,8 +12,8 @@ window._env_ = {
 ```
 
 ### 2. Kiểm tra server SignalR Hub
-- Server cần expose SignalR Hub tại endpoint `/hubs/patron-signature`
-- URL đầy đủ sẽ là: `http://10.21.10.1:8088/hubs/patron-signature`
+- Server cần expose SignalR Hub tại endpoint `/patronHub`
+- URL đầy đủ sẽ là: `http://10.21.10.1:8088/patronHub`
 
 ### 3. Sử dụng tính năng Debug trong UI
 PatronForm hiện có tính năng debug tích hợp:
@@ -79,14 +79,14 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     
     app.UseEndpoints(endpoints =>
     {
-        endpoints.MapHub</hubs/patron-signature>("/hubs/patron-signature");
+        endpoints.MapHub</patronHub>("/patronHub");
     });
 }
 ```
 
 ### 7. Kiểm tra kết nối thủ công
 Bạn có thể test kết nối bằng cách truy cập:
-- `http://10.21.10.1:8088/hubs/patron-signature/negotiate` (POST request)
+- `http://10.21.10.1:8088/patronHub/negotiate` (POST request)
 - Nếu trả về JSON với `connectionToken` thì server đang hoạt động
 
 ### 8. Tính năng tự động reconnect
@@ -102,8 +102,8 @@ Client đã được config để tự động reconnect:
 - WebSocket connections được allow qua proxy/firewall
 
 ### 10. Development vs Production
-- **Development**: Có thể dùng `http://localhost:5000/hubs/patron-signature`  
-- **Production**: Cần dùng địa chỉ IP thực: `http://10.21.10.1:8088/hubs/patron-signature`
+- **Development**: Có thể dùng `http://localhost:5000/patronHub`  
+- **Production**: Cần dùng địa chỉ IP thực: `http://10.21.10.1:8088/patronHub`
 
 ---
 
@@ -118,7 +118,7 @@ npm run dev
 cat public/env-config.js
 
 # Test kết nối tới server
-curl -X POST http://10.21.10.1:8088/hubs/patron-signature/negotiate
+curl -X POST http://10.21.10.1:8088/patronHub/negotiate
 ```
 
 ## 📞 Contact Support

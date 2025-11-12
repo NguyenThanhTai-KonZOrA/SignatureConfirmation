@@ -27,7 +27,7 @@ class SignalRService {
     private initializeConnection() {
         // Get API base URL from environment config
         const apiBase = (window as any)?._env_?.API_BASE || window.location.origin;
-        const hubUrl = `${apiBase}/hubs/patron-signature`;
+        const hubUrl = `${apiBase}/patronHub`;
 
         console.log('🔌 Initializing SignalR connection to:', hubUrl);
 
