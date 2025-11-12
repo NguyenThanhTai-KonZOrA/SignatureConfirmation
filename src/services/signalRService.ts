@@ -1,4 +1,5 @@
 import * as signalR from '@microsoft/signalr';
+import type { SignatureMessageData } from '../type';
 
 export interface PatronUpdateMessage {
     patronId: number;
@@ -19,15 +20,35 @@ class SignalRService {
     private reconnectAttempts = 0;
     private maxReconnectAttempts = 5;
     private reconnectDelay = 3000;
+    private deviceName?: string;
 
     constructor() {
         this.initializeConnection();
     }
 
+    public setDeviceName(deviceName: string) {
+        this.deviceName = deviceName;
+        // If connection is already established, we'll need to reconnect with the new device name
+        if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
+            console.log('🔄 Device name changed, reconnecting with new device name:', deviceName);
+            this.stop().then(() => {
+                this.initializeConnection();
+                this.start();
+            });
+        } else {
+            this.initializeConnection();
+        }
+    }
+
     private initializeConnection() {
         // Get API base URL from environment config
         const apiBase = (window as any)?._env_?.API_BASE || window.location.origin;
-        const hubUrl = `${apiBase}/patronHub`;
+        let hubUrl = `${apiBase}/patronSignatureHub`; // Updated to match the correct hub URL
+        
+        // Add device name parameter if available
+        if (this.deviceName) {
+            hubUrl += `?deviceName=${encodeURIComponent(this.deviceName)}`;
+        }
 
         console.log('🔌 Initializing SignalR connection to:', hubUrl);
 
@@ -142,6 +163,11 @@ class SignalRService {
     // Subscribe to income validation
     public onIncomeValidation(callback: (patronId: number, isValid: boolean, message: string) => void): void {
         this.connection?.on('ReceiveIncomeValidation', callback);
+    }
+
+    // Subscribe to signature requests
+    public onSignatureRequest(callback: (data: SignatureMessageData) => void): void {
+        this.connection?.on('ShowSignatureRequest', callback);
     }
 
     // Send patron data for validation

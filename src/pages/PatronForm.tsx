@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Card,
@@ -27,7 +28,8 @@ import {
     WifiOff,
     PersonSearch,
     AttachMoney,
-    Info as InfoIcon
+    Info as InfoIcon,
+    Settings
 } from '@mui/icons-material';
 import { useSignalR } from '../hooks/useSignalR';
 import { Toast, useToast } from '../components/Toast';
@@ -40,6 +42,7 @@ interface PatronFormProps {
 }
 
 export const PatronForm: React.FC<PatronFormProps> = ({ patronId }) => {
+    const navigate = useNavigate();
     const [statusMessage, setStatusMessage] = useState<string>('');
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [incomeValidated, setIncomeValidated] = useState<boolean>(false);
@@ -632,6 +635,31 @@ export const PatronForm: React.FC<PatronFormProps> = ({ patronId }) => {
                                                 Get Status
                                             </Button>
                                         )}
+
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            size="large"
+                                            startIcon={<Settings />}
+                                            onClick={() => navigate('/device-manager')}
+                                            sx={{
+                                                minWidth: 180,
+                                                minHeight: 56,
+                                                borderRadius: 3,
+                                                textTransform: 'none',
+                                                fontWeight: 700,
+                                                fontSize: '1.1rem',
+                                                borderWidth: 2,
+                                                transition: 'all 0.2s ease-in-out',
+                                                '&:hover': {
+                                                    borderWidth: 2,
+                                                    transform: 'translateY(-2px)',
+                                                    boxShadow: '0 4px 15px rgba(156, 39, 176, 0.25)'
+                                                }
+                                            }}
+                                        >
+                                            Device Manager
+                                        </Button>
                                     </Stack>
 
                                     <Divider sx={{ my: 4, borderStyle: 'dashed', borderColor: 'rgba(0,0,0,0.12)' }} />
