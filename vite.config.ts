@@ -20,8 +20,7 @@ export default defineConfig({
       'react', 
       'react-dom', 
       '@mui/material', 
-      '@mui/icons-material',
-      'react-swipeable-views'
+      '@mui/icons-material'
     ]
   },
   resolve: {

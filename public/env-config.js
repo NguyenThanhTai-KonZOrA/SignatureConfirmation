@@ -2,7 +2,7 @@
 // This file will be updated during build process
 
 window._env_ = {
-  API_BASE: 'https://localhost:7182',
+  API_BASE: 'https://ekyc.thegrandhotram.com',
   BUILD_VERSION: 'dev-' + new Date().toISOString().replace(/[:.]/g, '-'),
   BUILD_DATE: new Date().toISOString(),
   PACKAGE_VERSION: '0.0.0',
