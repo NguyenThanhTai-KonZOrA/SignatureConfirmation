@@ -107,6 +107,16 @@ export interface SignatureMessageData {
     expiryMinutes?: number;
     sessionId: string;
     staffDeviceId: string;
+    patronData?: PatronDataReceived;
+}
+
+export class PatronDataReceived {
+    firstName?: string;
+    lastName?: string;
+    idNumber?: string;
+    idType?: string;
+    birthday?: string;
+    address?: string;
 }
 
 export interface SignatureConfirmRequest {

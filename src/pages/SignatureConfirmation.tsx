@@ -167,9 +167,9 @@ export default function SignatureConfirmation() {
             };
 
             console.log('🔄 Submitting canvas signature:', request);
-            
+
             const response = await signatureApiService.submitSignature(request);
-            
+
             if (response && response.success) {
                 console.log('✅ Canvas signature submitted successfully:', response);
                 handleSignatureSubmitted(currentSignatureData.sessionId);
@@ -182,13 +182,13 @@ export default function SignatureConfirmation() {
 
         } catch (error) {
             let errorMessage = 'Failed to submit signature';
-            
+
             if (error && typeof error === 'object' && 'message' in error) {
                 errorMessage = String((error as any).message);
             } else if (typeof error === 'string') {
                 errorMessage = error;
             }
-            
+
             console.error('❌ Error submitting canvas signature:', error);
             setSignatureError(errorMessage);
             handleSignatureError(errorMessage);
@@ -219,14 +219,14 @@ export default function SignatureConfirmation() {
                         <Typography variant="h6" gutterBottom>
                             System Status
                         </Typography>
-                        
+
                         <Box sx={{ mb: 2 }}>
                             <Typography variant="body2" color="text.secondary" gutterBottom>
                                 {stepDescriptions[currentStep as keyof typeof stepDescriptions]}
                             </Typography>
-                            <LinearProgress 
-                                variant="determinate" 
-                                value={stepProgress[currentStep as keyof typeof stepProgress]} 
+                            <LinearProgress
+                                variant="determinate"
+                                value={stepProgress[currentStep as keyof typeof stepProgress]}
                                 sx={{ height: 8, borderRadius: 4 }}
                             />
                         </Box>
@@ -288,7 +288,7 @@ export default function SignatureConfirmation() {
                                     <Person />
                                     User Information
                                 </Typography>
-                                
+
                                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
                                     <Avatar sx={{ bgcolor: 'primary.main' }}>
                                         <Person />
@@ -327,7 +327,7 @@ export default function SignatureConfirmation() {
                                     <Devices />
                                     Device Information
                                 </Typography>
-                                
+
                                 {deviceInfo ? (
                                     <Stack spacing={1}>
                                         <Typography variant="body2">
@@ -393,10 +393,19 @@ export default function SignatureConfirmation() {
                                     </Typography>
                                     <Box sx={{ pl: 3 }}>
                                         <Typography variant="body2" gutterBottom>
-                                            <strong>Name:</strong> {currentSignatureData.patronName}
+                                            <strong>Full Name:</strong> {currentSignatureData.patronData?.lastName} {currentSignatureData.patronData?.firstName}
                                         </Typography>
                                         <Typography variant="body2" gutterBottom>
-                                            <strong>ID:</strong> {currentSignatureData.patronId}
+                                            <strong>ID Card Number:</strong> {currentSignatureData.patronData?.idNumber}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom>
+                                            <strong>ID Card Type:</strong> {currentSignatureData.patronData?.idType}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom>
+                                            <strong>Birthday:</strong> {currentSignatureData.patronData?.birthday}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom>
+                                            <strong>Address:</strong> {currentSignatureData.patronData?.address}
                                         </Typography>
                                         <Typography variant="body2" gutterBottom>
                                             <strong>Document Type:</strong> {currentSignatureData.documentType}
@@ -410,10 +419,10 @@ export default function SignatureConfirmation() {
                                 <Box>
                                     <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <Assignment fontSize="small" />
-                                        Request Details
+                                        Important!
                                     </Typography>
                                     <Alert severity="info" sx={{ mt: 1 }}>
-                                        {currentSignatureData.message}
+                                        Please review your information and provide your signature below to confirm your identity.
                                     </Alert>
                                 </Box>
 
@@ -435,7 +444,7 @@ export default function SignatureConfirmation() {
                                 )}
 
                                 {/* Request Info */}
-                                <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
+                                {/* <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
                                     <Typography variant="caption" color="text.secondary" display="block">
                                         <strong>Request ID:</strong> {currentSignatureData.requestId}
                                     </Typography>
@@ -445,7 +454,7 @@ export default function SignatureConfirmation() {
                                     <Typography variant="caption" color="text.secondary" display="block">
                                         <strong>Device:</strong> {deviceInfo?.deviceName || 'Unknown'}
                                     </Typography>
-                                </Box>
+                                </Box> */}
                             </Stack>
                         )}
                     </DialogContent>
