@@ -49,7 +49,6 @@ export const useSignatureRequest = (options: UseSignatureRequestOptions = {}) =>
 
         // Call custom handler if provided
         onSignatureRequest?.(data);
-        debugger
         // Show browser notification if supported
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('New Signature Request', {
