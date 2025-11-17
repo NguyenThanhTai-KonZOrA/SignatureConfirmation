@@ -63,6 +63,8 @@ export default function SignatureConfirmation() {
     const [isSubmittingSignature, setIsSubmittingSignature] = useState(false);
     const [signatureError, setSignatureError] = useState<string | null>(null);
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
+    const [htmlContent, setHtmlContent] = useState<string>('');
+    const [isLoadingHtml, setIsLoadingHtml] = useState(false);
 
     // Device Manager Context
     const {
@@ -84,9 +86,39 @@ export default function SignatureConfirmation() {
         handleSignatureSubmitted,
         handleSignatureError
     } = useSignatureRequest({
-        onSignatureRequest: (data) => {
+        onSignatureRequest: async (data) => {
             console.log('📝 New signature request received:', data);
             setCurrentSignatureData(data);
+            
+            // Call getReviewableSignatures API
+            setIsLoadingHtml(true);
+            try {
+                debugger
+                console.log('🔄 Fetching reviewable signatures for patronId:', data.patronId);
+                const response = await signatureApiService.getReviewableSignatures(data.patronId);
+                console.log('✅ Reviewable signatures response:', response);
+                
+                // Handle response format: { data: 'htmlcontent', message: ..., status: ..., success: ... }
+                if (response && typeof response === 'object') {
+                    const htmlData = (response as any).data || (response as any).htmlContent;
+                    if (htmlData) {
+                        setHtmlContent(htmlData);
+                    } else {
+                        console.warn('⚠️ No HTML content in response:', response);
+                        setHtmlContent('');
+                    }
+                } else {
+                    console.warn('⚠️ Invalid response format:', response);
+                    setHtmlContent('');
+                }
+            } catch (error) {
+                console.error('❌ Failed to fetch reviewable signatures:', error);
+                setSignatureError('Failed to load signature details');
+                setHtmlContent('');
+            } finally {
+                setIsLoadingHtml(false);
+            }
+            
             setSignatureDialogOpen(true);
         },
         onSignatureSubmitted: (requestId) => {
@@ -130,6 +162,8 @@ export default function SignatureConfirmation() {
             setCanvasSignature(null);
             setSignatureError(null);
             setIsSubmittingSignature(false);
+            setHtmlContent('');
+            setIsLoadingHtml(false);
         }
     }, [signatureDialogOpen]);
 
@@ -205,6 +239,18 @@ export default function SignatureConfirmation() {
     };
 
     const isExpired = timeLeft !== null && timeLeft <= 0;
+
+    // Debug logging for dialog rendering
+    useEffect(() => {
+        if (signatureDialogOpen) {
+            console.log('🔍 Dialog opened with:', {
+                isLoadingHtml,
+                hasCurrentData: !!currentSignatureData,
+                htmlContentLength: htmlContent?.length,
+                htmlContentPreview: htmlContent?.substring(0, 100)
+            });
+        }
+    }, [signatureDialogOpen, isLoadingHtml, currentSignatureData, htmlContent]);
 
     return (
         <MainLayout>
@@ -383,35 +429,50 @@ export default function SignatureConfirmation() {
                     </DialogTitle>
 
                     <DialogContent sx={{ pt: 2 }}>
-                        {currentSignatureData && (
+                        {isLoadingHtml ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    Loading signature details...
+                                </Typography>
+                                <LinearProgress sx={{ width: '100%' }} />
+                            </Box>
+                        ) : currentSignatureData ? (
                             <Stack spacing={3}>
-                                {/* Patron Information */}
-                                <Box>
-                                    <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Person fontSize="small" />
-                                        Customer Information
-                                    </Typography>
-                                    <Box sx={{ pl: 3 }}>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>Full Name:</strong> {currentSignatureData.patronData?.lastName} {currentSignatureData.patronData?.firstName}
+                                {/* Render HTML Content from API */}
+                                {htmlContent ? (
+                                    <Box>
+                                        <Typography variant="subtitle2" gutterBottom color="primary">
+                                            Review Information
                                         </Typography>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>ID Card Number:</strong> {currentSignatureData.patronData?.idNumber}
-                                        </Typography>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>ID Card Type:</strong> {currentSignatureData.patronData?.idType}
-                                        </Typography>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>Birthday:</strong> {currentSignatureData.patronData?.birthday}
-                                        </Typography>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>Address:</strong> {currentSignatureData.patronData?.address}
-                                        </Typography>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>Document Type:</strong> {currentSignatureData.documentType}
-                                        </Typography>
+                                        <Box 
+                                            sx={{ 
+                                                p: 2, 
+                                                border: '1px solid #e0e0e0', 
+                                                borderRadius: 1,
+                                                bgcolor: 'background.paper',
+                                                maxHeight: '400px',
+                                                overflowY: 'auto',
+                                                '& img': {
+                                                    maxWidth: '100%',
+                                                    height: 'auto'
+                                                },
+                                                '& table': {
+                                                    width: '100%',
+                                                    borderCollapse: 'collapse'
+                                                },
+                                                '& td, & th': {
+                                                    padding: '8px',
+                                                    border: '1px solid #e0e0e0'
+                                                }
+                                            }}
+                                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                                        />
                                     </Box>
-                                </Box>
+                                ) : (
+                                    <Alert severity="warning">
+                                        No review content available
+                                    </Alert>
+                                )}
 
                                 <Divider />
 
@@ -456,7 +517,7 @@ export default function SignatureConfirmation() {
                                     </Typography>
                                 </Box> */}
                             </Stack>
-                        )}
+                        ) : null}
                     </DialogContent>
 
                     <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
