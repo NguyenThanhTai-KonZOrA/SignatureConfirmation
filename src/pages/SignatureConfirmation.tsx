@@ -89,15 +89,14 @@ export default function SignatureConfirmation() {
         onSignatureRequest: async (data) => {
             console.log('📝 New signature request received:', data);
             setCurrentSignatureData(data);
-            
+
             // Call getReviewableSignatures API
             setIsLoadingHtml(true);
             try {
-                debugger
                 console.log('🔄 Fetching reviewable signatures for patronId:', data.patronId);
                 const response = await signatureApiService.getReviewableSignatures(data.patronId);
                 console.log('✅ Reviewable signatures response:', response);
-                
+
                 // Handle response format: { data: 'htmlcontent', message: ..., status: ..., success: ... }
                 if (response && typeof response === 'object') {
                     const htmlData = (response as any).data || (response as any).htmlContent;
@@ -118,7 +117,7 @@ export default function SignatureConfirmation() {
             } finally {
                 setIsLoadingHtml(false);
             }
-            
+
             setSignatureDialogOpen(true);
         },
         onSignatureSubmitted: (requestId) => {
@@ -409,10 +408,18 @@ export default function SignatureConfirmation() {
                     maxWidth="md"
                     fullWidth
                     disableEscapeKeyDown={isSubmittingSignature}
+                    PaperProps={{
+                        sx: {
+                            height: '85vh',
+                            maxHeight: '85vh',
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }
+                    }}
                 >
-                    <DialogTitle sx={{ pb: 1 }}>
+                    <DialogTitle sx={{ pb: 1, flexShrink: 0 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <Edit color="primary" />
+                            <Edit sx={{ color: '#274549' }} />
                             <Typography variant="h6" component="span">
                                 Digital Signature Request
                             </Typography>
@@ -428,7 +435,14 @@ export default function SignatureConfirmation() {
                         )}
                     </DialogTitle>
 
-                    <DialogContent sx={{ pt: 2 }}>
+                    <DialogContent sx={{
+                        pt: 2,
+                        pb: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        flex: 1
+                    }}>
                         {isLoadingHtml ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -437,91 +451,94 @@ export default function SignatureConfirmation() {
                                 <LinearProgress sx={{ width: '100%' }} />
                             </Box>
                         ) : currentSignatureData ? (
-                            <Stack spacing={3}>
-                                {/* Render HTML Content from API */}
-                                {htmlContent ? (
-                                    <Box>
-                                        <Typography variant="subtitle2" gutterBottom color="primary">
-                                            Review Information
+                            <>
+                                {/* Scrollable HTML Content Area */}
+                                <Box sx={{
+                                    flex: 1,
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
+                                    mb: 2,
+                                    pr: 1
+                                }}>
+                                    {/* Render HTML Content from API */}
+                                    {htmlContent ? (
+                                        <Box>
+                                            <Typography variant="subtitle2" gutterBottom color="primary">
+                                                <Alert severity="info" sx={{ mt: 1 , color: 'info.main' }}>
+                                                    Please review your information and provide your signature below to confirm your identity.
+                                                </Alert>
+                                            </Typography>
+                                            <Box
+                                                sx={{
+                                                    p: 2,
+                                                    border: '1px solid #e0e0e0',
+                                                    borderRadius: 1,
+                                                    bgcolor: 'background.paper',
+                                                    '& img': {
+                                                        maxWidth: '100%',
+                                                        height: 'auto'
+                                                    },
+                                                    '& table': {
+                                                        width: '100%',
+                                                        borderCollapse: 'collapse'
+                                                    },
+                                                    '& td, & th': {
+                                                        padding: '8px',
+                                                        border: '1px solid #e0e0e0'
+                                                    }
+                                                }}
+                                                dangerouslySetInnerHTML={{ __html: htmlContent }}
+                                            />
+                                        </Box>
+                                    ) : (
+                                        <Alert severity="warning">
+                                            No review content available
+                                        </Alert>
+                                    )}
+
+                                    {/* <Divider sx={{ my: 2 }} /> */}
+
+                                    {/* Message */}
+                                    {/* <Box>
+                                        <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Assignment fontSize="small" />
+                                            Important!
                                         </Typography>
-                                        <Box 
-                                            sx={{ 
-                                                p: 2, 
-                                                border: '1px solid #e0e0e0', 
-                                                borderRadius: 1,
-                                                bgcolor: 'background.paper',
-                                                maxHeight: '400px',
-                                                overflowY: 'auto',
-                                                '& img': {
-                                                    maxWidth: '100%',
-                                                    height: 'auto'
-                                                },
-                                                '& table': {
-                                                    width: '100%',
-                                                    borderCollapse: 'collapse'
-                                                },
-                                                '& td, & th': {
-                                                    padding: '8px',
-                                                    border: '1px solid #e0e0e0'
-                                                }
-                                            }}
-                                            dangerouslySetInnerHTML={{ __html: htmlContent }}
-                                        />
-                                    </Box>
-                                ) : (
-                                    <Alert severity="warning">
-                                        No review content available
-                                    </Alert>
-                                )}
-
-                                <Divider />
-
-                                {/* Message */}
-                                <Box>
-                                    <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Assignment fontSize="small" />
-                                        Important!
-                                    </Typography>
-                                    <Alert severity="info" sx={{ mt: 1 }}>
-                                        Please review your information and provide your signature below to confirm your identity.
-                                    </Alert>
+                                        <Alert severity="info" sx={{ mt: 1 }}>
+                                            Please review your information and provide your signature below to confirm your identity.
+                                        </Alert>
+                                    </Box> */}
                                 </Box>
 
-                                {/* Signature Canvas */}
-                                <Box>
+                                {/* Fixed Signature Canvas Area */}
+                                <Box sx={{
+                                    flexShrink: 0,
+                                    borderTop: '0.5px solid #274549',
+                                    pt: 2,
+                                    pb: 1,
+                                    bgcolor: 'background.paper'
+                                }}>
                                     <SignatureCanvas
                                         width={600}
-                                        height={250}
+                                        height={180}
                                         onSignatureChange={handleCanvasSignatureChange}
                                         disabled={isSubmittingSignature || isExpired}
                                     />
+
+                                    {/* Error Message */}
+                                    {signatureError && (
+                                        <Alert severity="error" sx={{ mt: 2 }}>
+                                            {signatureError}
+                                        </Alert>
+                                    )}
                                 </Box>
-
-                                {/* Error Message */}
-                                {signatureError && (
-                                    <Alert severity="error">
-                                        {signatureError}
-                                    </Alert>
-                                )}
-
-                                {/* Request Info */}
-                                {/* <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        <strong>Request ID:</strong> {currentSignatureData.requestId}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        <strong>Requested:</strong> {new Date(currentSignatureData.timestamp).toLocaleString()}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        <strong>Device:</strong> {deviceInfo?.deviceName || 'Unknown'}
-                                    </Typography>
-                                </Box> */}
-                            </Stack>
+                            </>
                         ) : null}
                     </DialogContent>
 
-                    <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
+                    <DialogActions sx={{ px: 3, pb: 2, pt: 1, flexShrink: 0, borderTop: '1px solid #e0e0e0' }}>
                         <Button
+                            sx={{ border: '1px solid #274549' }}
                             onClick={handleCloseSignatureDialog}
                             disabled={isSubmittingSignature}
                             startIcon={<Close />}
@@ -535,7 +552,7 @@ export default function SignatureConfirmation() {
                             startIcon={<Send />}
                             variant="contained"
                             color="primary"
-                            sx={{ minWidth: 140 }}
+                            sx={{ minWidth: 140, backgroundColor: '#274549' }}
                         >
                             {isSubmittingSignature ? 'Submitting...' : 'Submit Signature'}
                         </Button>
