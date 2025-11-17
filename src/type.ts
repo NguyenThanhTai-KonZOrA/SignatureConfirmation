@@ -132,3 +132,7 @@ export interface SignatureConfirmResponse {
     requestId: string;
     timestamp: string;
 }
+
+export interface ReviewableSignatureResponse {
+    htmlContent: string;
+}
