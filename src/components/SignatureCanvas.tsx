@@ -139,10 +139,10 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
 
     return (
         <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 2, bgcolor: 'background.paper' }}>
-            <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Edit fontSize="small" />
                 Digital Signature Canvas
-            </Typography>
+            </Typography> */}
             
             <Box sx={{ 
                 border: '2px dashed #ccc', 

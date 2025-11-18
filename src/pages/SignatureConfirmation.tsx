@@ -65,6 +65,7 @@ export default function SignatureConfirmation() {
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [isLoadingHtml, setIsLoadingHtml] = useState(false);
+    const [showSignaturePanel, setShowSignaturePanel] = useState(false);
 
     // Device Manager Context
     const {
@@ -163,6 +164,7 @@ export default function SignatureConfirmation() {
             setIsSubmittingSignature(false);
             setHtmlContent('');
             setIsLoadingHtml(false);
+            setShowSignaturePanel(false);
         }
     }, [signatureDialogOpen]);
 
@@ -405,34 +407,29 @@ export default function SignatureConfirmation() {
                 <Dialog
                     open={signatureDialogOpen}
                     onClose={handleCloseSignatureDialog}
-                    maxWidth="md"
+                    maxWidth="lg"
                     fullWidth
                     disableEscapeKeyDown={isSubmittingSignature}
                     PaperProps={{
                         sx: {
-                            height: '85vh',
-                            maxHeight: '85vh',
+                            height: '90vh',
+                            maxHeight: '90vh',
                             display: 'flex',
                             flexDirection: 'column'
                         }
                     }}
                 >
-                    <DialogTitle sx={{ pb: 1, flexShrink: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <Edit sx={{ color: '#274549' }} />
-                            <Typography variant="h6" component="span">
-                                Digital Signature Request
-                            </Typography>
+                    <DialogTitle sx={{ pb: 1, flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {timeLeft !== null && (
+                                <Chip
+                                    icon={<Schedule />}
+                                    label={isExpired ? 'Expired' : `${formatTimeLeft(timeLeft)} remaining`}
+                                    color={isExpired ? 'error' : timeLeft < 60 ? 'warning' : 'success'}
+                                    size="small"
+                                />
+                            )}
                         </Box>
-
-                        {timeLeft !== null && (
-                            <Chip
-                                icon={<Schedule />}
-                                label={isExpired ? 'Expired' : `${formatTimeLeft(timeLeft)} remaining`}
-                                color={isExpired ? 'error' : timeLeft < 60 ? 'warning' : 'success'}
-                                size="small"
-                            />
-                        )}
                     </DialogTitle>
 
                     <DialogContent sx={{
@@ -444,119 +441,276 @@ export default function SignatureConfirmation() {
                         flex: 1
                     }}>
                         {isLoadingHtml ? (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                    Loading signature details...
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                                <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+                                    Loading document...
                                 </Typography>
-                                <LinearProgress sx={{ width: '100%' }} />
+                                <LinearProgress sx={{ width: '60%' }} />
                             </Box>
                         ) : currentSignatureData ? (
                             <>
-                                {/* Scrollable HTML Content Area */}
+                                {/* Full Screen Scrollable HTML Content Area */}
                                 <Box sx={{
                                     flex: 1,
                                     overflowY: 'auto',
                                     overflowX: 'hidden',
-                                    mb: 2,
-                                    pr: 1
+                                    pr: 1,
+                                    WebkitOverflowScrolling: 'touch',
+                                    position: 'relative'
                                 }}>
-                                    {/* Render HTML Content from API */}
                                     {htmlContent ? (
-                                        <Box>
-                                            <Typography variant="subtitle2" gutterBottom color="primary">
-                                                <Alert severity="info" sx={{ mt: 1 , color: 'info.main' }}>
-                                                    Please review your information and provide your signature below to confirm your identity.
-                                                </Alert>
-                                            </Typography>
-                                            <Box
-                                                sx={{
-                                                    p: 2,
-                                                    border: '1px solid #e0e0e0',
-                                                    borderRadius: 1,
-                                                    bgcolor: 'background.paper',
-                                                    '& img': {
-                                                        maxWidth: '100%',
-                                                        height: 'auto'
-                                                    },
-                                                    '& table': {
-                                                        width: '100%',
-                                                        borderCollapse: 'collapse'
-                                                    },
-                                                    '& td, & th': {
-                                                        padding: '8px',
-                                                        border: '1px solid #e0e0e0'
-                                                    }
-                                                }}
-                                                dangerouslySetInnerHTML={{ __html: htmlContent }}
-                                            />
-                                        </Box>
+                                        <Box
+                                            sx={{
+                                                p: 3,
+                                                border: '1px solid #e0e0e0',
+                                                borderRadius: 2,
+                                                bgcolor: 'background.paper',
+                                                '& img': {
+                                                    maxWidth: '100%',
+                                                    height: 'auto'
+                                                },
+                                                '& table': {
+                                                    width: '100%',
+                                                    borderCollapse: 'collapse'
+                                                },
+                                                '& td, & th': {
+                                                    padding: '12px',
+                                                    border: '1px solid #e0e0e0'
+                                                },
+                                                '& th': {
+                                                    bgcolor: '#f5f5f5',
+                                                    fontWeight: 'bold'
+                                                }
+                                            }}
+                                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                                        />
                                     ) : (
-                                        <Alert severity="warning">
+                                        <Alert severity="warning" sx={{ fontSize: '1.1rem' }}>
                                             No review content available
                                         </Alert>
                                     )}
 
-                                    {/* <Divider sx={{ my: 2 }} /> */}
+                                    {/* Fixed Sign Button - Bottom Right Corner with hover expand */}
+                                    {!showSignaturePanel && (
+                                        <Button
+                                            onClick={() => setShowSignaturePanel(true)}
+                                            disabled={isExpired}
+                                            variant="contained"
+                                            size="large"
+                                            startIcon={<Edit />}
+                                            sx={{
+                                                position: 'sticky',
+                                                bottom: 16,
+                                                right: 16,
+                                                float: 'right',
+                                                mt: 2,
+                                                mb: 2,
+                                                backgroundColor: '#274549',
+                                                boxShadow: '0 4px 12px rgba(39, 69, 73, 0.3)',
+                                                minWidth: 56,
+                                                width: 56,
+                                                transition: 'width 0.3s cubic-bezier(.4,0,.2,1)',
+                                                overflow: 'hidden',
+                                                '& .MuiButton-startIcon': {
+                                                    margin: 0
+                                                },
+                                                '& .sign-label': {
+                                                    opacity: 0,
+                                                    width: 0,
+                                                    transition: 'opacity 0.2s, width 0.3s',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden'
+                                                },
+                                                '&:hover': {
+                                                    backgroundColor: '#1a3033',
+                                                    boxShadow: '0 6px 16px rgba(39, 69, 73, 0.4)',
+                                                    width: 140,
+                                                    '& .sign-label': {
+                                                        opacity: 1,
+                                                        width: 'auto',
+                                                        marginLeft: '8px'
+                                                    }
+                                                },
+                                                zIndex: 10
+                                            }}
+                                        >
+                                            <span className="sign-label">SIGN</span>
+                                        </Button>
+                                    )}
 
-                                    {/* Message */}
-                                    {/* <Box>
-                                        <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Assignment fontSize="small" />
-                                            Important!
-                                        </Typography>
-                                        <Alert severity="info" sx={{ mt: 1 }}>
-                                            Please review your information and provide your signature below to confirm your identity.
-                                        </Alert>
-                                    </Box> */}
-                                </Box>
-
-                                {/* Fixed Signature Canvas Area */}
-                                <Box sx={{
-                                    flexShrink: 0,
-                                    borderTop: '0.5px solid #274549',
-                                    pt: 2,
-                                    pb: 1,
-                                    bgcolor: 'background.paper'
-                                }}>
-                                    <SignatureCanvas
-                                        width={600}
-                                        height={180}
-                                        onSignatureChange={handleCanvasSignatureChange}
-                                        disabled={isSubmittingSignature || isExpired}
-                                    />
-
-                                    {/* Error Message */}
-                                    {signatureError && (
-                                        <Alert severity="error" sx={{ mt: 2 }}>
-                                            {signatureError}
-                                        </Alert>
+                                    {/* Show applied signature in review form */}
+                                    {canvasSignature && !showSignaturePanel && (
+                                        <Box sx={{ mt: 3, p: 2, border: '2px solid #274549', borderRadius: 2, bgcolor: '#f9f9f9' }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                                <Typography variant="body1" sx={{ color: '#274549', fontWeight: 'bold' }}>Your Signature:</Typography>
+                                                <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 1, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                                                    <img src={canvasSignature} alt="Signature Preview" style={{ height: 60, maxWidth: 300, display: 'block' }} />
+                                                </Box>
+                                                <Button
+                                                    onClick={() => {
+                                                        setCanvasSignature(null);
+                                                        setSignatureError(null);
+                                                        setShowSignaturePanel(true);
+                                                    }}
+                                                    variant="outlined"
+                                                    size="small"
+                                                    sx={{ color: '#274549', border: '1px solid #274549' }}
+                                                >
+                                                    Undo
+                                                </Button>
+                                            </Box>
+                                        </Box>
                                     )}
                                 </Box>
+
+                                {/* Signature Panel - Only show when Sign button clicked */}
+                                {showSignaturePanel && (
+                                    <Box
+                                        className="signature-panel"
+                                        sx={{
+                                            flexShrink: 0,
+                                            borderTop: '2px solid #274549',
+                                            pt: 2,
+                                            pb: 1,
+                                            bgcolor: '#f9f9f9',
+                                            animation: 'slideUp 0.4s ease-out',
+                                            '@keyframes slideUp': {
+                                                '0%': {
+                                                    transform: 'translateY(100%)',
+                                                    opacity: 0
+                                                },
+                                                '100%': {
+                                                    transform: 'translateY(0)',
+                                                    opacity: 1
+                                                }
+                                            },
+                                            '@keyframes slideDown': {
+                                                '0%': {
+                                                    transform: 'translateY(0)',
+                                                    opacity: 1
+                                                },
+                                                '100%': {
+                                                    transform: 'translateY(100%)',
+                                                    opacity: 0
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, px: 2 }}>
+                                            <Typography variant="body1" sx={{ color: '#274549' }}>
+                                                ✍️ Please provide your signature below
+                                            </Typography>
+                                            <Button
+                                                onClick={() => {
+                                                    // Add slide-down animation before closing
+                                                    const panel = document.querySelector('.signature-panel') as HTMLElement;
+                                                    if (panel) {
+                                                        panel.style.animation = 'slideDown 0.3s ease-in';
+                                                        setTimeout(() => {
+                                                            setShowSignaturePanel(false);
+                                                            setCanvasSignature(null);
+                                                            setSignatureError(null);
+                                                        }, 250);
+                                                    } else {
+                                                        setShowSignaturePanel(false);
+                                                        setCanvasSignature(null);
+                                                        setSignatureError(null);
+                                                    }
+                                                }}
+                                                size="small"
+                                                sx={{ color: '#274549' }}
+                                            >
+                                                Back to Review
+                                            </Button>
+                                        </Box>
+
+                                        <Box sx={{ px: 2 }}>
+                                            <SignatureCanvas
+                                                width={700}
+                                                height={180}
+                                                onSignatureChange={handleCanvasSignatureChange}
+                                                disabled={isSubmittingSignature || isExpired}
+                                            />
+
+                                            {/* Show signature preview and Undo in panel */}
+                                            {canvasSignature && (
+                                                <Box sx={{ mt: 2, p: 2, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                                        <Typography variant="body2" sx={{ color: '#274549', fontWeight: 'bold' }}>Preview:</Typography>
+                                                        <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 1 }}>
+                                                            <img src={canvasSignature} alt="Signature Preview" style={{ height: 60, maxWidth: 300, display: 'block' }} />
+                                                        </Box>
+                                                        <Button
+                                                            onClick={() => {
+                                                                setCanvasSignature(null);
+                                                                setSignatureError(null);
+                                                            }}
+                                                            variant="outlined"
+                                                            size="small"
+                                                            sx={{ color: '#274549', border: '1px solid #274549' }}
+                                                        >
+                                                            Undo
+                                                        </Button>
+                                                    </Box>
+                                                </Box>
+                                            )}
+                                        </Box>
+
+                                        {/* Error Message */}
+                                        {signatureError && (
+                                            <Alert severity="error" sx={{ mt: 2, mx: 2 }}>
+                                                {signatureError}
+                                            </Alert>
+                                        )}
+
+                                        {/* Actions when signature panel is shown */}
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, pb: 1 }}>
+                                            <Button
+                                                onClick={() => {
+                                                    // Add slide-down animation before closing
+                                                    const panel = document.querySelector('.signature-panel') as HTMLElement;
+                                                    if (panel) {
+                                                        panel.style.animation = 'slideDown 0.3s ease-in';
+                                                        setTimeout(() => {
+                                                            setShowSignaturePanel(false);
+                                                        }, 250);
+                                                    } else {
+                                                        setShowSignaturePanel(false);
+                                                    }
+                                                }}
+                                                disabled={isSubmittingSignature}
+                                                variant="outlined"
+                                                size="large"
+                                                sx={{
+                                                    minWidth: 140,
+                                                    border: '1px solid #274549',
+                                                    color: '#274549'
+                                                }}
+                                            >
+                                                Back
+                                            </Button>
+                                            <Button
+                                                onClick={handleSubmitCanvasSignature}
+                                                disabled={isSubmittingSignature || !canvasSignature || isExpired}
+                                                startIcon={<Send />}
+                                                variant="contained"
+                                                size="large"
+                                                sx={{
+                                                    minWidth: 180,
+                                                    backgroundColor: '#274549',
+                                                    '&:hover': {
+                                                        backgroundColor: '#1a3033'
+                                                    }
+                                                }}
+                                            >
+                                                {isSubmittingSignature ? 'Submitting...' : 'Submit Signature'}
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                )}
                             </>
                         ) : null}
                     </DialogContent>
-
-                    <DialogActions sx={{ px: 3, pb: 2, pt: 1, flexShrink: 0, borderTop: '1px solid #e0e0e0' }}>
-                        <Button
-                            sx={{ border: '1px solid #274549' }}
-                            onClick={handleCloseSignatureDialog}
-                            disabled={isSubmittingSignature}
-                            startIcon={<Close />}
-                            color="inherit"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleSubmitCanvasSignature}
-                            disabled={isSubmittingSignature || !canvasSignature || isExpired}
-                            startIcon={<Send />}
-                            variant="contained"
-                            color="primary"
-                            sx={{ minWidth: 140, backgroundColor: '#274549' }}
-                        >
-                            {isSubmittingSignature ? 'Submitting...' : 'Submit Signature'}
-                        </Button>
-                    </DialogActions>
                 </Dialog>
             </Box>
         </MainLayout>
