@@ -42,10 +42,10 @@ export default function MainLayout({
       flexDirection="column"
     >
       {/* Network Status Alert */}
-      <NetworkAlert 
-        isOnline={isOnline} 
-        isConnected={isConnected} 
-        connectionType={connectionType} 
+      <NetworkAlert
+        isOnline={isOnline}
+        isConnected={isConnected}
+        connectionType={connectionType}
       />
 
       {/* Header */}
@@ -136,7 +136,7 @@ export default function MainLayout({
       </Box>
 
       {/* Language selector ở bottom center */}
-      <Box
+      {/*<Box
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -175,7 +175,7 @@ export default function MainLayout({
             </Box>
           </MenuItem>
         </Select>
-      </Box>
+      </Box> */}
     </Box>
   );
 }

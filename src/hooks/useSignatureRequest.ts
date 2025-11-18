@@ -49,10 +49,11 @@ export const useSignatureRequest = (options: UseSignatureRequestOptions = {}) =>
 
         // Call custom handler if provided
         onSignatureRequest?.(data);
+
         // Show browser notification if supported
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('New Signature Request', {
-                body: `Signature requested for ${data.patronData?.firstName} ${data.patronData?.lastName}`,
+                body: `Signature requested for ${data.patronName}`,
                 icon: '/images/TheGrandHoTram.png'
             });
         }
