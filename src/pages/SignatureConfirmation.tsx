@@ -14,7 +14,9 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 import {
     Person,
@@ -66,6 +68,11 @@ export default function SignatureConfirmation() {
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [isLoadingHtml, setIsLoadingHtml] = useState(false);
     const [showSignaturePanel, setShowSignaturePanel] = useState(false);
+    
+    // Responsive design hooks
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
 
     // Device Manager Context
     const {
@@ -409,13 +416,15 @@ export default function SignatureConfirmation() {
                     onClose={handleCloseSignatureDialog}
                     maxWidth="lg"
                     fullWidth
+                    fullScreen={isMobile}
                     disableEscapeKeyDown={isSubmittingSignature}
                     PaperProps={{
                         sx: {
-                            height: '90vh',
-                            maxHeight: '90vh',
+                            height: isMobile ? '100vh' : '90vh',
+                            maxHeight: isMobile ? '100vh' : '90vh',
                             display: 'flex',
-                            flexDirection: 'column'
+                            flexDirection: 'column',
+                            m: isMobile ? 0 : 2
                         }
                     }}
                 >
@@ -570,9 +579,13 @@ export default function SignatureConfirmation() {
                                         sx={{
                                             flexShrink: 0,
                                             borderTop: '2px solid #274549',
-                                            pt: 2,
-                                            pb: 1,
+                                            pt: 1, // Reduced padding top
+                                            pb: 3, // Increased padding bottom for buttons
                                             bgcolor: '#f9f9f9',
+                                            minHeight: isMobile || isTablet ? 280 : 320, // Reduced min height
+                                            maxHeight: isMobile || isTablet ? '35vh' : '40vh', // Limit height to push up
+                                            display: 'flex',
+                                            flexDirection: 'column',
                                             animation: 'slideUp 0.4s ease-out',
                                             '@keyframes slideUp': {
                                                 '0%': {
@@ -596,8 +609,8 @@ export default function SignatureConfirmation() {
                                             }
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, px: 2 }}>
-                                            <Typography variant="body1" sx={{ color: '#274549' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 2 }}>
+                                            <Typography variant="body2" sx={{ color: '#274549', fontSize: '0.9rem' }}>
                                                 ✍️ Please provide your signature below
                                             </Typography>
                                             <Button
@@ -618,27 +631,27 @@ export default function SignatureConfirmation() {
                                                     }
                                                 }}
                                                 size="small"
-                                                sx={{ color: '#274549' }}
+                                                sx={{ color: '#274549', fontSize: '0.8rem', minWidth: 'auto' }}
                                             >
                                                 Back to Review
                                             </Button>
                                         </Box>
 
-                                        <Box sx={{ px: 2 }}>
-                                            <SignatureCanvas
-                                                width={700}
-                                                height={180}
-                                                onSignatureChange={handleCanvasSignatureChange}
-                                                disabled={isSubmittingSignature || isExpired}
-                                            />
+                                        <Box sx={{ px: isMobile ? 1 : 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <Box sx={{ flex: 1 }}>
+                                                <SignatureCanvas
+                                                    onSignatureChange={handleCanvasSignatureChange}
+                                                    disabled={isSubmittingSignature || isExpired}
+                                                />
+                                            </Box>
 
                                             {/* Show signature preview and Undo in panel */}
                                             {canvasSignature && (
-                                                <Box sx={{ mt: 2, p: 2, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                                        <Typography variant="body2" sx={{ color: '#274549', fontWeight: 'bold' }}>Preview:</Typography>
-                                                        <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 1 }}>
-                                                            <img src={canvasSignature} alt="Signature Preview" style={{ height: 60, maxWidth: 300, display: 'block' }} />
+                                                <Box sx={{ mt: 1, p: 1.5, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                                        <Typography variant="caption" sx={{ color: '#274549', fontWeight: 'bold' }}>Preview:</Typography>
+                                                        <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 0.5 }}>
+                                                            <img src={canvasSignature} alt="Signature Preview" style={{ height: 40, maxWidth: 200, display: 'block' }} />
                                                         </Box>
                                                         <Button
                                                             onClick={() => {
@@ -647,7 +660,7 @@ export default function SignatureConfirmation() {
                                                             }}
                                                             variant="outlined"
                                                             size="small"
-                                                            sx={{ color: '#274549', border: '1px solid #274549' }}
+                                                            sx={{ color: '#274549', border: '1px solid #274549', minHeight: 32, fontSize: '0.75rem' }}
                                                         >
                                                             Undo
                                                         </Button>
@@ -658,13 +671,26 @@ export default function SignatureConfirmation() {
 
                                         {/* Error Message */}
                                         {signatureError && (
-                                            <Alert severity="error" sx={{ mt: 2, mx: 2 }}>
-                                                {signatureError}
+                                            <Alert severity="error" sx={{ mt: 1, mx: 2, py: 0.5 }}>
+                                                <Typography variant="caption">{signatureError}</Typography>
                                             </Alert>
                                         )}
 
                                         {/* Actions when signature panel is shown */}
-                                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2, pb: 1 }}>
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            justifyContent: 'center', 
+                                            gap: 1.5, 
+                                            mt: 'auto', // Push to bottom
+                                            pt: 1.5,
+                                            pb: 1,
+                                            flexDirection: 'row', // Always keep in row
+                                            px: isMobile ? 1 : 0,
+                                            flexWrap: 'nowrap', // Prevent wrapping
+                                            borderTop: '1px solid #e0e0e0', // Visual separator
+                                            bgcolor: '#ffffff', // White background for buttons
+                                            borderRadius: '0 0 8px 8px'
+                                        }}>
                                             <Button
                                                 onClick={() => {
                                                     // Add slide-down animation before closing
@@ -680,11 +706,13 @@ export default function SignatureConfirmation() {
                                                 }}
                                                 disabled={isSubmittingSignature}
                                                 variant="outlined"
-                                                size="large"
+                                                size="medium"
                                                 sx={{
-                                                    minWidth: 140,
+                                                    minWidth: isMobile || isTablet ? 100 : 140,
+                                                    flex: isMobile || isTablet ? 1 : 'none', // Equal width on mobile/tablet
                                                     border: '1px solid #274549',
-                                                    color: '#274549'
+                                                    color: '#274549',
+                                                    fontSize: isMobile ? '0.875rem' : '1rem'
                                                 }}
                                             >
                                                 Back
@@ -694,10 +722,12 @@ export default function SignatureConfirmation() {
                                                 disabled={isSubmittingSignature || !canvasSignature || isExpired}
                                                 startIcon={<Send />}
                                                 variant="contained"
-                                                size="large"
+                                                size="medium"
                                                 sx={{
-                                                    minWidth: 180,
+                                                    minWidth: isMobile || isTablet ? 120 : 180,
+                                                    flex: isMobile || isTablet ? 1 : 'none', // Equal width on mobile/tablet
                                                     backgroundColor: '#274549',
+                                                    fontSize: isMobile ? '0.875rem' : '1rem',
                                                     '&:hover': {
                                                         backgroundColor: '#1a3033'
                                                     }

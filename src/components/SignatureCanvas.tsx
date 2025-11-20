@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Box, Button, Typography, Stack, Alert } from '@mui/material';
+import { Box, Button, Typography, Stack, Alert, useTheme, useMediaQuery } from '@mui/material';
 import { Clear, Edit } from '@mui/icons-material';
 
 interface SignatureCanvasProps {
@@ -10,15 +10,69 @@ interface SignatureCanvasProps {
 }
 
 export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
-    width = 500,
-    height = 200,
+    width,
+    height,
     onSignatureChange,
     disabled = false
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [isEmpty, setIsEmpty] = useState(true);
     const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+    const [canvasSize, setCanvasSize] = useState({ width: 500, height: 200 });
+    
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+
+    // Calculate responsive canvas size
+    useEffect(() => {
+        const calculateSize = () => {
+            let containerWidth = 700; // default width
+            
+            // Get actual container width if available
+            if (containerRef.current) {
+                containerWidth = containerRef.current.offsetWidth - 32; // Account for padding
+            } else {
+                const dialogPadding = 48;
+                const availableWidth = window.innerWidth - dialogPadding;
+                containerWidth = Math.min(availableWidth * 0.9, 700);
+            }
+            
+            let newWidth = containerWidth;
+            let newHeight = height || 200;
+            
+            // Responsive sizing based on screen size - use more of available width
+            if (isMobile) {
+                newWidth = containerWidth - 16; // Full width minus padding
+                newHeight = 120; // Smaller height for mobile
+            } else if (isTablet) {
+                newWidth = containerWidth - 16; // Full width minus padding
+                newHeight = 140; // Smaller height for tablet/iPad
+            } else {
+                newWidth = containerWidth - 16; // Full width minus padding
+                newHeight = height || 180; // Smaller default height
+            }
+            
+            setCanvasSize({ width: Math.max(newWidth, 300), height: newHeight });
+        };
+
+        // Initial calculation
+        calculateSize();
+        
+        // Recalculate after a brief delay to ensure container is rendered
+        const timer = setTimeout(calculateSize, 100);
+        
+        // Recalculate on window resize
+        const handleResize = () => calculateSize();
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [width, height, isMobile, isTablet]);
 
     // Initialize canvas
     useEffect(() => {
@@ -29,8 +83,8 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
         if (!ctx) return;
 
         // Set canvas size
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = canvasSize.width;
+        canvas.height = canvasSize.height;
 
         // Configure drawing style
         ctx.strokeStyle = '#000000';
@@ -40,30 +94,34 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
 
         // Fill background with white
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
 
         setContext(ctx);
-    }, [width, height]);
+    }, [canvasSize.width, canvasSize.height]);
 
-    // Get mouse/touch position
+    // Get mouse/touch position with proper scaling
     const getPosition = useCallback((event: React.MouseEvent | React.TouchEvent) => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
 
         const rect = canvas.getBoundingClientRect();
         
+        // Account for canvas scaling
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
         if ('touches' in event) {
             // Touch event
             const touch = event.touches[0] || event.changedTouches[0];
             return {
-                x: touch.clientX - rect.left,
-                y: touch.clientY - rect.top
+                x: (touch.clientX - rect.left) * scaleX,
+                y: (touch.clientY - rect.top) * scaleY
             };
         } else {
             // Mouse event
             return {
-                x: event.clientX - rect.left,
-                y: event.clientY - rect.top
+                x: (event.clientX - rect.left) * scaleX,
+                y: (event.clientY - rect.top) * scaleY
             };
         }
     }, []);
@@ -128,20 +186,28 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
         if (!context) return;
 
         context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, width, height);
+        context.fillRect(0, 0, canvasSize.width, canvasSize.height);
         
         setIsEmpty(true);
         
         if (onSignatureChange) {
             onSignatureChange(null);
         }
-    }, [context, width, height, onSignatureChange]);
+    }, [context, canvasSize.width, canvasSize.height, onSignatureChange]);
 
     return (
-        <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 2, bgcolor: 'background.paper' }}>
-            {/* <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Edit fontSize="small" />
-                Digital Signature Canvas
+        <Box 
+            ref={containerRef}
+            sx={{ 
+                border: '1px solid #ddd', 
+                borderRadius: 1, 
+                p: { xs: 1, sm: 2 }, 
+                bgcolor: 'background.paper',
+                width: '100%'
+            }}
+        >
+            {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 1, textAlign: 'center' }}>
+                ✍️ Draw your signature anywhere in the box below
             </Typography> */}
             
             <Box sx={{ 
@@ -149,7 +215,12 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 borderRadius: 1, 
                 mb: 2,
                 cursor: disabled ? 'not-allowed' : 'crosshair',
-                opacity: disabled ? 0.6 : 1
+                opacity: disabled ? 0.6 : 1,
+                overflow: 'hidden',
+                width: '100%',
+                position: 'relative',
+                bgcolor: '#fafafa',
+                minHeight: 160
             }}>
                 <canvas
                     ref={canvasRef}
@@ -158,6 +229,9 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                         touchAction: 'none', // Prevent scrolling and enable preventDefault alternative
                         userSelect: 'none', // Prevent text selection
                         WebkitUserSelect: 'none', // Safari support
+                        width: '100%',
+                        height: 'auto',
+                        border: 'none'
                     }}
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
@@ -189,11 +263,11 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 )}
             </Stack>
             
-            {isEmpty && (
+            {/* {isEmpty && (
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
-                    Please draw your signature above
+                    Touch anywhere in the signature area above to start drawing
                 </Typography>
-            )}
+            )} */}
         </Box>
     );
 };
