@@ -68,7 +68,7 @@ export default function SignatureConfirmation() {
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [isLoadingHtml, setIsLoadingHtml] = useState(false);
     const [showSignaturePanel, setShowSignaturePanel] = useState(false);
-    
+
     // Responsive design hooks
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -548,7 +548,7 @@ export default function SignatureConfirmation() {
                                     )}
 
                                     {/* Show applied signature in review form */}
-                                    {canvasSignature && !showSignaturePanel && (
+                                    {/* {canvasSignature && !showSignaturePanel && (
                                         <Box sx={{ mt: 3, p: 2, border: '2px solid #274549', borderRadius: 2, bgcolor: '#f9f9f9' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                                                 <Typography variant="body1" sx={{ color: '#274549', fontWeight: 'bold' }}>Your Signature:</Typography>
@@ -569,7 +569,7 @@ export default function SignatureConfirmation() {
                                                 </Button>
                                             </Box>
                                         </Box>
-                                    )}
+                                    )} */}
                                 </Box>
 
                                 {/* Signature Panel - Only show when Sign button clicked */}
@@ -613,7 +613,7 @@ export default function SignatureConfirmation() {
                                             <Typography variant="body2" sx={{ color: '#274549', fontSize: '0.9rem' }}>
                                                 ✍️ Please provide your signature below
                                             </Typography>
-                                            <Button
+                                            {/* <Button
                                                 onClick={() => {
                                                     // Add slide-down animation before closing
                                                     const panel = document.querySelector('.signature-panel') as HTMLElement;
@@ -634,7 +634,7 @@ export default function SignatureConfirmation() {
                                                 sx={{ color: '#274549', fontSize: '0.8rem', minWidth: 'auto' }}
                                             >
                                                 Back to Review
-                                            </Button>
+                                            </Button> */}
                                         </Box>
 
                                         <Box sx={{ px: isMobile ? 1 : 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -646,7 +646,7 @@ export default function SignatureConfirmation() {
                                             </Box>
 
                                             {/* Show signature preview and Undo in panel */}
-                                            {canvasSignature && (
+                                            {/* {canvasSignature && (
                                                 <Box sx={{ mt: 1, p: 1.5, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                                                         <Typography variant="caption" sx={{ color: '#274549', fontWeight: 'bold' }}>Preview:</Typography>
@@ -666,7 +666,7 @@ export default function SignatureConfirmation() {
                                                         </Button>
                                                     </Box>
                                                 </Box>
-                                            )}
+                                            )} */}
                                         </Box>
 
                                         {/* Error Message */}
@@ -677,12 +677,12 @@ export default function SignatureConfirmation() {
                                         )}
 
                                         {/* Actions when signature panel is shown */}
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'center', 
-                                            gap: 1.5, 
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            gap: 1.5,
                                             mt: 'auto', // Push to bottom
-                                            pt: 1.5,
+                                            pt: 1,
                                             pb: 1,
                                             flexDirection: 'row', // Always keep in row
                                             px: isMobile ? 1 : 0,
