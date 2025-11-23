@@ -68,7 +68,7 @@ export default function SignatureConfirmation() {
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [isLoadingHtml, setIsLoadingHtml] = useState(false);
     const [showSignaturePanel, setShowSignaturePanel] = useState(false);
-    
+
     // Responsive design hooks
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -693,10 +693,10 @@ export default function SignatureConfirmation() {
                                         )}
 
                                         {/* Actions when signature panel is shown */}
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'center', 
-                                            gap: isMobile ? 1 : 1.5, 
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            gap: isMobile ? 1 : 1.5,
                                             mt: 'auto',
                                             pt: isMobile ? 1 : 1.5,
                                             pb: isMobile ? 1 : 1.5,
