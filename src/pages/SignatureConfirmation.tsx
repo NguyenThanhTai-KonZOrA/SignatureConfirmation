@@ -439,6 +439,20 @@ export default function SignatureConfirmation() {
                                 />
                             )}
                         </Box>
+                        <Button
+                            onClick={handleCloseSignatureDialog}
+                            disabled={isSubmittingSignature}
+                            sx={{
+                                minWidth: 'auto',
+                                p: 1,
+                                color: '#274549',
+                                '&:hover': {
+                                    bgcolor: 'rgba(39, 69, 73, 0.1)'
+                                }
+                            }}
+                        >
+                            <Close />
+                        </Button>
                     </DialogTitle>
 
                     <DialogContent sx={{
@@ -579,11 +593,11 @@ export default function SignatureConfirmation() {
                                         sx={{
                                             flexShrink: 0,
                                             borderTop: '2px solid #274549',
-                                            pt: 1, // Reduced padding top
-                                            pb: 3, // Increased padding bottom for buttons
+                                            pt: isMobile ? 0.5 : 1,
+                                            pb: 0,
                                             bgcolor: '#f9f9f9',
-                                            minHeight: isMobile || isTablet ? 280 : 320, // Reduced min height
-                                            maxHeight: isMobile || isTablet ? '35vh' : '40vh', // Limit height to push up
+                                            minHeight: isMobile ? 'auto' : isTablet ? 260 : 320,
+                                            maxHeight: isMobile ? '45vh' : isTablet ? '40vh' : '45vh',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             animation: 'slideUp 0.4s ease-out',
@@ -609,9 +623,9 @@ export default function SignatureConfirmation() {
                                             }
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: 2 }}>
-                                            <Typography variant="body2" sx={{ color: '#274549', fontSize: '0.9rem' }}>
-                                                ✍️ Please provide your signature below
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: isMobile ? 0.5 : 1, px: isMobile ? 1 : 2, py: 0.5 }}>
+                                            <Typography variant="body2" sx={{ color: '#274549', fontSize: isMobile ? '0.75rem' : '0.9rem' }}>
+                                                ✍️ {isMobile ? 'Sign below' : 'Please provide your signature below'}
                                             </Typography>
                                             <Button
                                                 onClick={() => {
@@ -631,27 +645,29 @@ export default function SignatureConfirmation() {
                                                     }
                                                 }}
                                                 size="small"
-                                                sx={{ color: '#274549', fontSize: '0.8rem', minWidth: 'auto' }}
+                                                sx={{ color: '#274549', fontSize: isMobile ? '0.7rem' : '0.8rem', minWidth: 'auto', p: 0.5 }}
                                             >
-                                                Back to Review
+                                                {isMobile ? 'Back' : 'Back to Review'}
                                             </Button>
                                         </Box>
 
-                                        <Box sx={{ px: isMobile ? 1 : 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                            <Box sx={{ flex: 1 }}>
+                                        <Box sx={{ px: isMobile ? 0.5 : 2, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                                            <Box sx={{ flex: 0, mb: isMobile ? 0.5 : 1 }}>
                                                 <SignatureCanvas
+                                                    width={isMobile ? 340 : isTablet ? 500 : 700}
+                                                    height={isMobile ? 120 : isTablet ? 140 : 180}
                                                     onSignatureChange={handleCanvasSignatureChange}
                                                     disabled={isSubmittingSignature || isExpired}
                                                 />
                                             </Box>
 
                                             {/* Show signature preview and Undo in panel */}
-                                            {canvasSignature && (
-                                                <Box sx={{ mt: 1, p: 1.5, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                                        <Typography variant="caption" sx={{ color: '#274549', fontWeight: 'bold' }}>Preview:</Typography>
-                                                        <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 0.5 }}>
-                                                            <img src={canvasSignature} alt="Signature Preview" style={{ height: 40, maxWidth: 200, display: 'block' }} />
+                                            {/* {canvasSignature && (
+                                                <Box sx={{ mt: isMobile ? 0.5 : 1, p: isMobile ? 0.75 : 1.5, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
+                                                        <Typography variant="caption" sx={{ color: '#274549', fontWeight: 'bold', fontSize: isMobile ? '0.7rem' : '0.75rem' }}>Preview:</Typography>
+                                                        <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: isMobile ? 0.25 : 0.5 }}>
+                                                            <img src={canvasSignature} alt="Signature Preview" style={{ height: isMobile ? 30 : 40, maxWidth: isMobile ? 150 : 200, display: 'block' }} />
                                                         </Box>
                                                         <Button
                                                             onClick={() => {
@@ -660,19 +676,19 @@ export default function SignatureConfirmation() {
                                                             }}
                                                             variant="outlined"
                                                             size="small"
-                                                            sx={{ color: '#274549', border: '1px solid #274549', minHeight: 32, fontSize: '0.75rem' }}
+                                                            sx={{ color: '#274549', border: '1px solid #274549', minHeight: isMobile ? 28 : 32, fontSize: isMobile ? '0.65rem' : '0.75rem', px: isMobile ? 1 : 1.5 }}
                                                         >
                                                             Undo
                                                         </Button>
                                                     </Box>
                                                 </Box>
-                                            )}
+                                            )} */}
                                         </Box>
 
                                         {/* Error Message */}
                                         {signatureError && (
-                                            <Alert severity="error" sx={{ mt: 1, mx: 2, py: 0.5 }}>
-                                                <Typography variant="caption">{signatureError}</Typography>
+                                            <Alert severity="error" sx={{ mt: isMobile ? 0.5 : 1, mx: isMobile ? 0.5 : 2, py: isMobile ? 0.25 : 0.5 }}>
+                                                <Typography variant="caption" sx={{ fontSize: isMobile ? '0.7rem' : '0.75rem' }}>{signatureError}</Typography>
                                             </Alert>
                                         )}
 
@@ -680,16 +696,21 @@ export default function SignatureConfirmation() {
                                         <Box sx={{ 
                                             display: 'flex', 
                                             justifyContent: 'center', 
-                                            gap: 1.5, 
-                                            mt: 'auto', // Push to bottom
-                                            pt: 1.5,
-                                            pb: 1,
-                                            flexDirection: 'row', // Always keep in row
-                                            px: isMobile ? 1 : 0,
-                                            flexWrap: 'nowrap', // Prevent wrapping
-                                            borderTop: '1px solid #e0e0e0', // Visual separator
-                                            bgcolor: '#ffffff', // White background for buttons
-                                            borderRadius: '0 0 8px 8px'
+                                            gap: isMobile ? 1 : 1.5, 
+                                            mt: 'auto',
+                                            pt: isMobile ? 1 : 1.5,
+                                            pb: isMobile ? 1 : 1.5,
+                                            flexDirection: 'row',
+                                            px: isMobile ? 1 : 2,
+                                            flexWrap: 'nowrap',
+                                            borderTop: '1px solid #e0e0e0',
+                                            bgcolor: '#ffffff',
+                                            boxShadow: '0 -2px 8px rgba(0,0,0,0.05)',
+                                            position: 'sticky',
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            zIndex: 10
                                         }}>
                                             <Button
                                                 onClick={() => {
@@ -706,13 +727,14 @@ export default function SignatureConfirmation() {
                                                 }}
                                                 disabled={isSubmittingSignature}
                                                 variant="outlined"
-                                                size="medium"
+                                                size={isMobile ? 'small' : 'medium'}
                                                 sx={{
-                                                    minWidth: isMobile || isTablet ? 100 : 140,
-                                                    flex: isMobile || isTablet ? 1 : 'none', // Equal width on mobile/tablet
+                                                    minWidth: isMobile ? 80 : isTablet ? 100 : 140,
+                                                    flex: isMobile || isTablet ? 1 : 'none',
                                                     border: '1px solid #274549',
                                                     color: '#274549',
-                                                    fontSize: isMobile ? '0.875rem' : '1rem'
+                                                    fontSize: isMobile ? '0.8rem' : '1rem',
+                                                    height: isMobile ? 36 : 40
                                                 }}
                                             >
                                                 Back
@@ -720,20 +742,21 @@ export default function SignatureConfirmation() {
                                             <Button
                                                 onClick={handleSubmitCanvasSignature}
                                                 disabled={isSubmittingSignature || !canvasSignature || isExpired}
-                                                startIcon={<Send />}
+                                                startIcon={isMobile ? null : <Send />}
                                                 variant="contained"
-                                                size="medium"
+                                                size={isMobile ? 'small' : 'medium'}
                                                 sx={{
-                                                    minWidth: isMobile || isTablet ? 120 : 180,
-                                                    flex: isMobile || isTablet ? 1 : 'none', // Equal width on mobile/tablet
+                                                    minWidth: isMobile ? 100 : isTablet ? 120 : 180,
+                                                    flex: isMobile || isTablet ? 1.5 : 'none',
                                                     backgroundColor: '#274549',
-                                                    fontSize: isMobile ? '0.875rem' : '1rem',
+                                                    fontSize: isMobile ? '0.8rem' : '1rem',
+                                                    height: isMobile ? 36 : 40,
                                                     '&:hover': {
                                                         backgroundColor: '#1a3033'
                                                     }
                                                 }}
                                             >
-                                                {isSubmittingSignature ? 'Submitting...' : 'Submit Signature'}
+                                                {isSubmittingSignature ? (isMobile ? 'Sending...' : 'Submitting...') : (isMobile ? 'Submit' : 'Submit Signature')}
                                             </Button>
                                         </Box>
                                     </Box>
