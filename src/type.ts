@@ -136,3 +136,7 @@ export interface SignatureConfirmResponse {
 export interface ReviewableSignatureResponse {
     htmlContent: string;
 }
+
+export interface GetTermsResponse {
+    htmlContent: string;
+}

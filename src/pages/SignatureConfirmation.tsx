@@ -16,7 +16,9 @@ import {
     DialogContent,
     DialogActions,
     useTheme,
-    useMediaQuery
+    useMediaQuery,
+    Checkbox,
+    FormControlLabel
 } from '@mui/material';
 import {
     Person,
@@ -29,7 +31,8 @@ import {
     Assignment,
     Edit,
     Send,
-    Close
+    Close,
+    Description
 } from '@mui/icons-material';
 import MainLayout from "../layout/MainLayout";
 import { useDeviceManagerContext } from '../contexts/deviceManagerContext';
@@ -68,6 +71,12 @@ export default function SignatureConfirmation() {
     const [htmlContent, setHtmlContent] = useState<string>('');
     const [isLoadingHtml, setIsLoadingHtml] = useState(false);
     const [showSignaturePanel, setShowSignaturePanel] = useState(false);
+
+    // Terms and Conditions states
+    const [termsDialogOpen, setTermsDialogOpen] = useState(false);
+    const [termsContent, setTermsContent] = useState<string>('');
+    const [isLoadingTerms, setIsLoadingTerms] = useState(false);
+    const [hasAgreedToTerms, setHasAgreedToTerms] = useState(false);
 
     // Responsive design hooks
     const theme = useTheme();
@@ -172,8 +181,44 @@ export default function SignatureConfirmation() {
             setHtmlContent('');
             setIsLoadingHtml(false);
             setShowSignaturePanel(false);
+            setHasAgreedToTerms(false);
         }
     }, [signatureDialogOpen]);
+
+    // Load Terms and Conditions
+    const loadTermsAndConditions = async (language: string = 'en') => {
+        setIsLoadingTerms(true);
+        setTermsDialogOpen(true);
+        try {
+            console.log('🔄 Fetching terms and conditions...');
+            const response = await signatureApiService.getTermsAndConditions(language);
+            console.log('✅ Terms and conditions response:', response);
+
+            if (response && typeof response === 'object') {
+                const termsData = (response as any).data || (response as any).htmlContent || (response as any).content;
+                if (termsData) {
+                    setTermsContent(termsData);
+                } else {
+                    console.warn('⚠️ No terms content in response:', response);
+                    setTermsContent('<p>Terms and conditions not available</p>');
+                }
+            } else {
+                console.warn('⚠️ Invalid terms response format:', response);
+                setTermsContent('<p>Terms and conditions not available</p>');
+            }
+        } catch (error) {
+            console.error('❌ Failed to fetch terms and conditions:', error);
+            setTermsContent('<p>Failed to load terms and conditions</p>');
+        } finally {
+            setIsLoadingTerms(false);
+        }
+    };
+
+    // Handle agree to terms
+    const handleAgreeToTerms = () => {
+        setHasAgreedToTerms(true);
+        setTermsDialogOpen(false);
+    };
 
     const formatTimeLeft = (seconds: number): string => {
         const mins = Math.floor(seconds / 60);
@@ -189,6 +234,11 @@ export default function SignatureConfirmation() {
     const handleSubmitCanvasSignature = async () => {
         if (!currentSignatureData || !canvasSignature) {
             setSignatureError('Please provide your signature');
+            return;
+        }
+
+        if (!hasAgreedToTerms) {
+            setSignatureError('Please read and agree to the Terms and Conditions');
             return;
         }
 
@@ -694,6 +744,56 @@ export default function SignatureConfirmation() {
                                             </Alert>
                                         )}
 
+                                        {/* Terms and Conditions Checkbox */}
+                                        <Box sx={{
+                                            px: isMobile ? 1 : 2, pt: isMobile ? 1 : 1.5,
+                                            display: 'flex',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={hasAgreedToTerms}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                loadTermsAndConditions('en');
+                                                            } else {
+                                                                setHasAgreedToTerms(false);
+                                                            }
+                                                        }}
+                                                        sx={{
+                                                            color: '#274549',
+                                                            '&.Mui-checked': {
+                                                                color: '#274549'
+                                                            }
+                                                        }}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography variant="h6" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
+                                                        I agree to the {' '}
+                                                        <Button
+                                                            onClick={() => loadTermsAndConditions('en')}
+                                                            sx={{
+                                                                textTransform: 'none',
+                                                                p: 0,
+                                                                minWidth: 'auto',
+                                                                color: '#274549',
+                                                                textDecoration: 'underline',
+                                                                fontSize: isMobile ? '0.75rem' : '0.875rem',
+                                                                '&:hover': {
+                                                                    bgcolor: 'transparent',
+                                                                    textDecoration: 'underline'
+                                                                }
+                                                            }}
+                                                        >
+                                                            Terms and Conditions
+                                                        </Button>
+                                                    </Typography>
+                                                }
+                                            />
+                                        </Box>
+
                                         {/* Actions when signature panel is shown */}
                                         <Box sx={{
                                             display: 'flex',
@@ -731,8 +831,8 @@ export default function SignatureConfirmation() {
                                                 variant="outlined"
                                                 size={isMobile ? 'small' : 'medium'}
                                                 sx={{
-                                                    minWidth: isMobile ? 80 : isTablet ? 100 : 120,
-                                                    flex: isMobile || isTablet ? 1 : 'none',
+                                                    minWidth: isMobile ? 100 : isTablet ? 120 : 140,
+                                                    flex: isMobile || isTablet ? 1.5 : 'none',
                                                     border: '1px solid #274549',
                                                     color: '#274549',
                                                     fontSize: isMobile ? '0.8rem' : '1rem',
@@ -743,7 +843,7 @@ export default function SignatureConfirmation() {
                                             </Button>
                                             <Button
                                                 onClick={handleSubmitCanvasSignature}
-                                                disabled={isSubmittingSignature || !canvasSignature || isExpired}
+                                                disabled={isSubmittingSignature || !canvasSignature || isExpired || !hasAgreedToTerms}
                                                 startIcon={isMobile ? null : <Send />}
                                                 variant="contained"
                                                 size={isMobile ? 'small' : 'medium'}
@@ -758,7 +858,7 @@ export default function SignatureConfirmation() {
                                                     }
                                                 }}
                                             >
-                                                {isSubmittingSignature ? (isMobile ? 'Sending...' : 'Submitting...') : (isMobile ? 'Submit' : 'Submit Signature')}
+                                                {isSubmittingSignature ? (isMobile ? 'Sending...' : 'Submitting...') : (isMobile ? 'Submit Signature' : 'Submit Signature')}
                                             </Button>
                                         </Box>
                                     </Box>
@@ -766,6 +866,131 @@ export default function SignatureConfirmation() {
                             </>
                         ) : null}
                     </DialogContent>
+                </Dialog>
+
+                {/* Terms and Conditions Dialog */}
+                <Dialog
+                    open={termsDialogOpen}
+                    onClose={() => setTermsDialogOpen(false)}
+                    maxWidth="md"
+                    fullWidth
+                    fullScreen={isMobile}
+                    PaperProps={{
+                        sx: {
+                            height: isMobile ? '100vh' : '80vh',
+                            maxHeight: isMobile ? '100vh' : '80vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            m: isMobile ? 0 : 2
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{
+                        pb: 1,
+                        flexShrink: 0,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        bgcolor: '#274549',
+                        color: 'white'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Description />
+                            <Typography variant="h6">Terms and Conditions</Typography>
+                        </Box>
+                        <Button
+                            onClick={() => setTermsDialogOpen(false)}
+                            sx={{
+                                minWidth: 'auto',
+                                p: 1,
+                                color: 'white',
+                                '&:hover': {
+                                    bgcolor: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            }}
+                        >
+                            <Close />
+                        </Button>
+                    </DialogTitle>
+
+                    <DialogContent sx={{
+                        pt: 2,
+                        pb: 2,
+                        flex: 1,
+                        overflow: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        {isLoadingTerms ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                                <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+                                    Loading terms and conditions...
+                                </Typography>
+                                <LinearProgress sx={{ width: '60%' }} />
+                            </Box>
+                        ) : (
+                            <Box
+                                sx={{
+                                    p: 3,
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: 2,
+                                    bgcolor: 'background.paper',
+                                    '& img': {
+                                        maxWidth: '100%',
+                                        height: 'auto'
+                                    },
+                                    '& table': {
+                                        width: '100%',
+                                        borderCollapse: 'collapse'
+                                    },
+                                    '& td, & th': {
+                                        padding: '12px',
+                                        border: '1px solid #e0e0e0'
+                                    },
+                                    '& th': {
+                                        bgcolor: '#f5f5f5',
+                                        fontWeight: 'bold'
+                                    }
+                                }}
+                                dangerouslySetInnerHTML={{ __html: termsContent }}
+                            />
+                        )}
+                    </DialogContent>
+
+                    <DialogActions sx={{
+                        p: 2,
+                        borderTop: '1px solid #e0e0e0',
+                        bgcolor: '#f9f9f9'
+                    }}>
+                        <Button
+                            onClick={() => setTermsDialogOpen(false)}
+                            variant="outlined"
+                            sx={{
+                                border: '1px solid #274549',
+                                color: '#274549',
+                                '&:hover': {
+                                    border: '1px solid #1a3033',
+                                    bgcolor: 'rgba(39, 69, 73, 0.05)'
+                                }
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleAgreeToTerms}
+                            variant="contained"
+                            disabled={isLoadingTerms}
+                            startIcon={<CheckCircle />}
+                            sx={{
+                                backgroundColor: '#274549',
+                                '&:hover': {
+                                    backgroundColor: '#1a3033'
+                                }
+                            }}
+                        >
+                            Agree & Continue
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </MainLayout>

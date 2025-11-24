@@ -1,6 +1,6 @@
 import axios from "axios";
 import CacheBuster from "../utils/cacheBuster";
-import type { RegisterDeviceRequest, RegisterDeviceResponse, ReviewableSignatureResponse, SignatureConfirmRequest, SignatureConfirmResponse, UpdateConnectionRequest, UpdateConnectionResponse } from "../type";
+import type { GetTermsResponse, RegisterDeviceRequest, RegisterDeviceResponse, ReviewableSignatureResponse, SignatureConfirmRequest, SignatureConfirmResponse, UpdateConnectionRequest, UpdateConnectionResponse } from "../type";
 
 const API_BASE = (window as any)._env_?.API_BASE;
 const api = axios.create({
@@ -116,6 +116,16 @@ export const signatureApiService = {
             return unwrapApiEnvelope(response);
         } catch (error) {
             console.error('Error fetching reviewable signatures:', error);
+            throw error;
+        }
+    },
+
+    getTermsAndConditions: async (language: string): Promise<GetTermsResponse> => {
+        try {
+            const response = await api.get(`/api/Documents/getTermsV2/` + encodeURIComponent(language));
+            return unwrapApiEnvelope(response);
+        } catch (error) {
+            console.error('Error fetching terms and conditions:', error);
             throw error;
         }
     }

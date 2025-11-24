@@ -21,7 +21,7 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     const [isEmpty, setIsEmpty] = useState(true);
     const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 500, height: 200 });
-    
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
@@ -30,7 +30,7 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     useEffect(() => {
         const calculateSize = () => {
             let containerWidth = 700; // default width
-            
+
             // Get actual container width if available
             if (containerRef.current) {
                 containerWidth = containerRef.current.offsetWidth - 32; // Account for padding
@@ -39,10 +39,10 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 const availableWidth = window.innerWidth - dialogPadding;
                 containerWidth = Math.min(availableWidth * 0.9, 700);
             }
-            
+
             let newWidth = containerWidth;
             let newHeight = height || 200;
-            
+
             // Responsive sizing based on screen size - use more of available width
             if (isMobile) {
                 newWidth = containerWidth - 16; // Full width minus padding
@@ -54,20 +54,20 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 newWidth = containerWidth - 16; // Full width minus padding
                 newHeight = height || 180; // Smaller default height
             }
-            
+
             setCanvasSize({ width: Math.max(newWidth, 300), height: newHeight });
         };
 
         // Initial calculation
         calculateSize();
-        
+
         // Recalculate after a brief delay to ensure container is rendered
         const timer = setTimeout(calculateSize, 100);
-        
+
         // Recalculate on window resize
         const handleResize = () => calculateSize();
         window.addEventListener('resize', handleResize);
-        
+
         return () => {
             clearTimeout(timer);
             window.removeEventListener('resize', handleResize);
@@ -105,11 +105,11 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
         if (!canvas) return { x: 0, y: 0 };
 
         const rect = canvas.getBoundingClientRect();
-        
+
         // Account for canvas scaling
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-        
+
         if ('touches' in event) {
             // Touch event
             const touch = event.touches[0] || event.changedTouches[0];
@@ -136,9 +136,9 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
         } else {
             event.preventDefault();
         }
-        
+
         const { x, y } = getPosition(event);
-        
+
         setIsDrawing(true);
         context.beginPath();
         context.moveTo(x, y);
@@ -154,12 +154,12 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
         } else {
             event.preventDefault();
         }
-        
+
         const { x, y } = getPosition(event);
-        
+
         context.lineTo(x, y);
         context.stroke();
-        
+
         if (isEmpty) {
             setIsEmpty(false);
         }
@@ -168,9 +168,9 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     // Stop drawing
     const stopDrawing = useCallback(() => {
         if (!isDrawing) return;
-        
+
         setIsDrawing(false);
-        
+
         // Notify parent of signature change
         if (!isEmpty && onSignatureChange) {
             const canvas = canvasRef.current;
@@ -187,21 +187,21 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
 
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvasSize.width, canvasSize.height);
-        
+
         setIsEmpty(true);
-        
+
         if (onSignatureChange) {
             onSignatureChange(null);
         }
     }, [context, canvasSize.width, canvasSize.height, onSignatureChange]);
 
     return (
-        <Box 
+        <Box
             ref={containerRef}
-            sx={{ 
-                border: '1px solid #ddd', 
-                borderRadius: 1, 
-                p: { xs: 1, sm: 2 }, 
+            sx={{
+                border: '1px solid #ddd',
+                borderRadius: 1,
+                p: { xs: 1, sm: 2 },
                 bgcolor: 'background.paper',
                 width: '100%'
             }}
@@ -209,11 +209,10 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
             {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 1, textAlign: 'center' }}>
                 ✍️ Draw your signature anywhere in the box below
             </Typography> */}
-            
-            <Box sx={{ 
-                border: '2px dashed #ccc', 
-                borderRadius: 1, 
-                mb: 2,
+
+            <Box sx={{
+                border: '2px dashed #ccc',
+                borderRadius: 1,
                 cursor: disabled ? 'not-allowed' : 'crosshair',
                 opacity: disabled ? 0.6 : 1,
                 overflow: 'hidden',
@@ -222,6 +221,32 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 bgcolor: '#fafafa',
                 minHeight: 160
             }}>
+                {/* Clear button inside canvas - top right corner */}
+                <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<Clear />}
+                    onClick={clearSignature}
+                    disabled={disabled || isEmpty}
+                    size="small"
+                    sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 10,
+                        bgcolor: 'white',
+                        minWidth: 'auto',
+                        px: 1.5,
+                        py: 0.5,
+                        fontSize: '0.75rem',
+                        '&:hover': {
+                            bgcolor: 'white'
+                        }
+                    }}
+                >
+                    Clear
+                </Button>
+
                 <canvas
                     ref={canvasRef}
                     style={{
@@ -243,26 +268,6 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 />
             </Box>
 
-            <Stack direction="row" spacing={2} justifyContent="center">
-                <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<Clear />}
-                    onClick={clearSignature}
-                    disabled={disabled || isEmpty}
-                    size="small"
-                >
-                    Clear
-                </Button>
-                {!isEmpty && (
-                    <Alert severity="success" sx={{ py: 0.5, px: 1 }}>
-                        <Typography variant="caption">
-                            ✓ Signature captured
-                        </Typography>
-                    </Alert>
-                )}
-            </Stack>
-            
             {/* {isEmpty && (
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
                     Touch anywhere in the signature area above to start drawing
