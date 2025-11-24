@@ -746,9 +746,14 @@ export default function SignatureConfirmation() {
 
                                         {/* Terms and Conditions Checkbox */}
                                         <Box sx={{
-                                            px: isMobile ? 1 : 2, pt: isMobile ? 1 : 1.5,
+                                            px: isMobile ? 1 : 2,
+                                            pt: isMobile ? 1 : 1.5,
                                             display: 'flex',
-                                            justifyContent: 'center'
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            borderTop: '1px solid #e0e0e0',
+                                            bgcolor: '#ffffff',
+                                            boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
                                         }}>
                                             <FormControlLabel
                                                 control={
@@ -770,8 +775,8 @@ export default function SignatureConfirmation() {
                                                     />
                                                 }
                                                 label={
-                                                    <Typography variant="h6" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
-                                                        I agree to the {' '}
+                                                    <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
+                                                        I agree to the Terms and Conditions {' '}
                                                         <Button
                                                             onClick={() => loadTermsAndConditions('en')}
                                                             sx={{
@@ -780,18 +785,30 @@ export default function SignatureConfirmation() {
                                                                 minWidth: 'auto',
                                                                 color: '#274549',
                                                                 textDecoration: 'underline',
-                                                                fontSize: isMobile ? '0.75rem' : '0.875rem',
+                                                                fontSize: isMobile ? '0.8rem' : '1rem',
                                                                 '&:hover': {
                                                                     bgcolor: 'transparent',
                                                                     textDecoration: 'underline'
                                                                 }
                                                             }}
                                                         >
-                                                            Terms and Conditions
                                                         </Button>
                                                     </Typography>
                                                 }
                                             />
+                                            {canvasSignature && !hasAgreedToTerms && (
+                                                <Typography
+                                                    variant={isMobile ? 'caption' : 'body2'}
+                                                    sx={{
+                                                        color: 'error.main',
+                                                        mt: 0.5,
+                                                        fontWeight: 550,
+                                                        textAlign: 'center'
+                                                    }}
+                                                >
+                                                    Please read terms and conditions before submitting.
+                                                </Typography>
+                                            )}
                                         </Box>
 
                                         {/* Actions when signature panel is shown */}
@@ -877,8 +894,8 @@ export default function SignatureConfirmation() {
                     fullScreen={isMobile}
                     PaperProps={{
                         sx: {
-                            height: isMobile ? '100vh' : '80vh',
-                            maxHeight: isMobile ? '100vh' : '80vh',
+                            height: isMobile ? '95vh' : '80vh',
+                            maxHeight: isMobile ? '95vh' : '80vh',
                             display: 'flex',
                             flexDirection: 'column',
                             m: isMobile ? 0 : 2
@@ -931,6 +948,7 @@ export default function SignatureConfirmation() {
                         ) : (
                             <Box
                                 sx={{
+                                    wordSpacing: '0.15em',
                                     p: 3,
                                     border: '1px solid #e0e0e0',
                                     borderRadius: 2,

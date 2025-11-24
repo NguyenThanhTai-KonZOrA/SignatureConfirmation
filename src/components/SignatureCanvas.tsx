@@ -219,7 +219,8 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                 width: '100%',
                 position: 'relative',
                 bgcolor: '#fafafa',
-                minHeight: 160
+                height: `${canvasSize.height}px`, // dynamic height matches actual canvas size
+                transition: 'height 0.2s ease'
             }}>
                 {/* Clear button inside canvas - top right corner */}
                 <Button
@@ -252,10 +253,10 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                     style={{
                         display: 'block',
                         touchAction: 'none', // Prevent scrolling and enable preventDefault alternative
-                        userSelect: 'none', // Prevent text selection
-                        WebkitUserSelect: 'none', // Safari support
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none',
                         width: '100%',
-                        height: 'auto',
+                        height: '100%', // fill container height exactly
                         border: 'none'
                     }}
                     onMouseDown={startDrawing}
