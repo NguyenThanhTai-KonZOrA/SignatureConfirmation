@@ -596,10 +596,12 @@ export default function SignatureConfirmation() {
                                             pt: isMobile ? 0.5 : 1,
                                             pb: 0,
                                             bgcolor: '#f9f9f9',
-                                            minHeight: isMobile ? 'auto' : isTablet ? 260 : 320,
+                                            minHeight: isMobile ? 'auto' : isTablet ? 250 : 300,
                                             maxHeight: isMobile ? '45vh' : isTablet ? '40vh' : '45vh',
                                             display: 'flex',
                                             flexDirection: 'column',
+                                            position: 'relative',
+                                            bottom: '10%',
                                             animation: 'slideUp 0.4s ease-out',
                                             '@keyframes slideUp': {
                                                 '0%': {
@@ -607,13 +609,13 @@ export default function SignatureConfirmation() {
                                                     opacity: 0
                                                 },
                                                 '100%': {
-                                                    transform: 'translateY(0)',
+                                                    transform: 'translateY(-10%)',
                                                     opacity: 1
                                                 }
                                             },
                                             '@keyframes slideDown': {
                                                 '0%': {
-                                                    transform: 'translateY(0)',
+                                                    transform: 'translateY(-10%)',
                                                     opacity: 1
                                                 },
                                                 '100%': {
@@ -623,7 +625,7 @@ export default function SignatureConfirmation() {
                                             }
                                         }}
                                     >
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: isMobile ? 0.5 : 1, px: isMobile ? 1 : 2, py: 0.5 }}>
+                                        {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: isMobile ? 0.5 : 1, px: isMobile ? 1 : 2, py: 0.5 }}>
                                             <Typography variant="body2" sx={{ color: '#274549', fontSize: isMobile ? '0.75rem' : '0.9rem' }}>
                                                 ✍️ {isMobile ? 'Sign below' : 'Please provide your signature below'}
                                             </Typography>
@@ -649,7 +651,7 @@ export default function SignatureConfirmation() {
                                             >
                                                 {isMobile ? 'Back' : 'Back to Review'}
                                             </Button>
-                                        </Box>
+                                        </Box> */}
 
                                         <Box sx={{ px: isMobile ? 0.5 : 2, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                                             <Box sx={{ flex: 0, mb: isMobile ? 0.5 : 1 }}>
@@ -729,7 +731,7 @@ export default function SignatureConfirmation() {
                                                 variant="outlined"
                                                 size={isMobile ? 'small' : 'medium'}
                                                 sx={{
-                                                    minWidth: isMobile ? 80 : isTablet ? 100 : 140,
+                                                    minWidth: isMobile ? 80 : isTablet ? 100 : 120,
                                                     flex: isMobile || isTablet ? 1 : 'none',
                                                     border: '1px solid #274549',
                                                     color: '#274549',
@@ -746,7 +748,7 @@ export default function SignatureConfirmation() {
                                                 variant="contained"
                                                 size={isMobile ? 'small' : 'medium'}
                                                 sx={{
-                                                    minWidth: isMobile ? 100 : isTablet ? 120 : 180,
+                                                    minWidth: isMobile ? 100 : isTablet ? 120 : 140,
                                                     flex: isMobile || isTablet ? 1.5 : 'none',
                                                     backgroundColor: '#274549',
                                                     fontSize: isMobile ? '0.8rem' : '1rem',
