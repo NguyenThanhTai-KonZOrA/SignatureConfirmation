@@ -1,6 +1,6 @@
 import axios from "axios";
 import CacheBuster from "../utils/cacheBuster";
-import type { GetTermsResponse, RegisterDeviceRequest, RegisterDeviceResponse, ReviewableSignatureResponse, SignatureConfirmRequest, SignatureConfirmResponse, UpdateConnectionRequest, UpdateConnectionResponse } from "../type";
+import type { CurrentrHostNameResponse, GetTermsResponse, RegisterDeviceRequest, RegisterDeviceResponse, ReviewableSignatureResponse, SignatureConfirmRequest, SignatureConfirmResponse, UpdateConnectionRequest, UpdateConnectionResponse } from "../type";
 
 const API_BASE = (window as any)._env_?.API_BASE;
 const api = axios.create({
@@ -110,9 +110,9 @@ export const signatureApiService = {
         }
     },
 
-    getReviewableSignatures: async (patronId: number): Promise<ReviewableSignatureResponse> => {
+    getReviewableSignatures: async (patronId: number, language?: string): Promise<ReviewableSignatureResponse> => {
         try {
-            const response = await api.get(`/api/CustomerSign/sign-review/${patronId}`);
+            const response = await api.get(`/api/CustomerSign/sign-review/${patronId}`, { params: { language: encodeURIComponent(language || '') } });
             return unwrapApiEnvelope(response);
         } catch (error) {
             console.error('Error fetching reviewable signatures:', error);
@@ -128,5 +128,10 @@ export const signatureApiService = {
             console.error('Error fetching terms and conditions:', error);
             throw error;
         }
+    },
+
+    getCurrentHostName: async (): Promise<CurrentrHostNameResponse> => {
+        const res = await api.get(`/api/PatronDevice/client-name`);
+        return unwrapApiEnvelope(res);
     }
 };

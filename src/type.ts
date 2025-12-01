@@ -140,3 +140,8 @@ export interface ReviewableSignatureResponse {
 export interface GetTermsResponse {
     htmlContent: string;
 }
+
+export interface CurrentrHostNameResponse {
+  computerName: string;
+  ip: string;
+}

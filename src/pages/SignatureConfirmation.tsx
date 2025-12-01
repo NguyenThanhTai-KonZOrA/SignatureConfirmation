@@ -40,6 +40,7 @@ import { useSignatureRequest } from '../hooks/useSignatureRequest';
 import { SignatureCanvas } from '../components/SignatureCanvas';
 import { signatureApiService } from '../services/signatrueApiService';
 import type { SignatureMessageData, SignatureConfirmRequest } from '../type';
+import { useTranslation } from 'react-i18next';
 
 const stepDescriptions = {
     'idle': 'Initializing system...',
@@ -78,11 +79,47 @@ export default function SignatureConfirmation() {
     const [isLoadingTerms, setIsLoadingTerms] = useState(false);
     const [hasAgreedToTerms, setHasAgreedToTerms] = useState(false);
 
+    // Current hostname state
+    const [currentHostName, setCurrentHostName] = useState<string>('');
+    const [currentHostIP, setCurrentHostIP] = useState<string>('');
+
     // Responsive design hooks
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+    const { t, i18n } = useTranslation();
+    const [selectedLanguage, setSelectedLanguage] = useState<string>(i18n.language || 'en');
 
+    // Sync language when i18n language changes
+    useEffect(() => {
+        const handleLanguageChange = (lng: string) => {
+            setSelectedLanguage(lng);
+        };
+        i18n.on('languageChanged', handleLanguageChange);
+        return () => {
+            i18n.off('languageChanged', handleLanguageChange);
+        };
+    }, [i18n]);
+
+    // Load current hostname on mount
+    useEffect(() => {
+        const loadCurrentHostName = async () => {
+            try {
+                console.log('🔄 Fetching current hostname...');
+                const response = await signatureApiService.getCurrentHostName();
+                console.log('✅ Current hostname response:', response);
+
+                if (response) {
+                    setCurrentHostName(response.computerName || '');
+                    setCurrentHostIP(response.ip || '');
+                }
+            } catch (error) {
+                console.error('❌ Failed to fetch current hostname:', error);
+            }
+        };
+
+        loadCurrentHostName();
+    }, []);
     // Device Manager Context
     const {
         registrationResult,
@@ -110,8 +147,8 @@ export default function SignatureConfirmation() {
             // Call getReviewableSignatures API
             setIsLoadingHtml(true);
             try {
-                console.log('🔄 Fetching reviewable signatures for patronId:', data.patronId);
-                const response = await signatureApiService.getReviewableSignatures(data.patronId);
+                console.log('🔄 Fetching reviewable signatures for patronId:', data.patronId, 'language:', selectedLanguage);
+                const response = await signatureApiService.getReviewableSignatures(data.patronId, selectedLanguage);
                 console.log('✅ Reviewable signatures response:', response);
 
                 // Handle response format: { data: 'htmlcontent', message: ..., status: ..., success: ... }
@@ -186,12 +223,12 @@ export default function SignatureConfirmation() {
     }, [signatureDialogOpen]);
 
     // Load Terms and Conditions
-    const loadTermsAndConditions = async (language: string = 'en') => {
+    const loadTermsAndConditions = async () => {
         setIsLoadingTerms(true);
         setTermsDialogOpen(true);
         try {
-            console.log('🔄 Fetching terms and conditions...');
-            const response = await signatureApiService.getTermsAndConditions(language);
+            console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
+            const response = await signatureApiService.getTermsAndConditions(selectedLanguage);
             console.log('✅ Terms and conditions response:', response);
 
             if (response && typeof response === 'object') {
@@ -314,14 +351,14 @@ export default function SignatureConfirmation() {
         <MainLayout>
             <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
                 <Typography variant="h4" gutterBottom sx={{ mb: 4, textAlign: 'center' }}>
-                    📝 Signature Confirmation System
+                    📝 {t("SystemTitle")}
                 </Typography>
 
                 {/* System Status */}
                 <Card elevation={3} sx={{ mb: 3 }}>
                     <CardContent>
                         <Typography variant="h6" gutterBottom>
-                            System Status
+                            {t("SystemStatus")}
                         </Typography>
 
                         <Box sx={{ mb: 2 }}>
@@ -338,25 +375,25 @@ export default function SignatureConfirmation() {
                         <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1 }}>
                             <Chip
                                 icon={registrationResult?.success ? <CheckCircle /> : <Error />}
-                                label={registrationResult?.success ? 'Device Registered' : 'Not Registered'}
+                                label={registrationResult?.success ? t("DeviceRegistered") : t("NotRegistered")}
                                 color={registrationResult?.success ? 'success' : 'default'}
                                 variant={registrationResult?.success ? 'filled' : 'outlined'}
                             />
                             <Chip
                                 icon={isConnectedToSignalR ? <Wifi /> : <WifiOff />}
-                                label={isConnectedToSignalR ? 'Service Connected' : 'Service Disconnected'}
+                                label={isConnectedToSignalR ? t("ServiceConnected") : t("ServiceDisconnected")}
                                 color={isConnectedToSignalR ? 'success' : 'default'}
                                 variant={isConnectedToSignalR ? 'filled' : 'outlined'}
                             />
                             <Chip
                                 icon={<Devices />}
-                                label={isReady ? 'Ready for Signatures' : 'Initializing...'}
+                                label={isReady ? t("ReadyForSignatures") : t("Initializing")}
                                 color={isReady ? 'success' : 'default'}
                                 variant={isReady ? 'filled' : 'outlined'}
                             />
                             {totalRequests > 0 && (
                                 <Chip
-                                    label={`Total Requests: ${totalRequests}`}
+                                    label={`${t("TotalRequests")}: ${totalRequests}`}
                                     color="info"
                                     variant="outlined"
                                 />
@@ -366,7 +403,7 @@ export default function SignatureConfirmation() {
                         {deviceError && (
                             <Alert severity="error" sx={{ mt: 2 }} action={
                                 <Button color="inherit" size="small" onClick={retry}>
-                                    Retry
+                                    {t("Retry")}
                                 </Button>
                             }>
                                 {deviceError}
@@ -376,7 +413,7 @@ export default function SignatureConfirmation() {
                         {isReady && (
                             <Alert severity="success" sx={{ mt: 2 }}>
                                 <Typography variant="body2">
-                                    🎉 System is ready! Waiting for signature requests...
+                                    🎉 {t("SystemReadyMessage")}
                                 </Typography>
                             </Alert>
                         )}
@@ -390,7 +427,7 @@ export default function SignatureConfirmation() {
                             <CardContent>
                                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Person />
-                                    User Information
+                                    {t("UserInformation")}
                                 </Typography>
 
                                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -399,10 +436,10 @@ export default function SignatureConfirmation() {
                                     </Avatar>
                                     <Box>
                                         <Typography variant="subtitle1" fontWeight="bold">
-                                            Staff Member
+                                            {t("StaffMember")}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            Device: {deviceInfo?.deviceName || 'Unknown Device'}
+                                            {t("Device")}: {deviceInfo?.deviceName || t("UnknownDevice")}
                                         </Typography>
                                     </Box>
                                 </Stack>
@@ -411,13 +448,13 @@ export default function SignatureConfirmation() {
 
                                 <Stack spacing={1}>
                                     <Typography variant="body2">
-                                        <strong>Status:</strong> {isReady ? 'Active' : 'Initializing'}
+                                        <strong>{t("Status")}:</strong> {isReady ? t("Active") : t("Initializing")}
                                     </Typography>
                                     <Typography variant="body2">
-                                        <strong>Location:</strong> {deviceInfo?.ipAddress || 'Unknown'}
+                                        <strong>{t("Location")}:</strong> {deviceInfo?.ipAddress || t("Unknown")}
                                     </Typography>
                                     <Typography variant="body2">
-                                        <strong>Last Activity:</strong> {lastHeartbeat ? lastHeartbeat.toLocaleTimeString() : 'Never'}
+                                        <strong>{t("LastActivity")}:</strong> {lastHeartbeat ? lastHeartbeat.toLocaleTimeString() : t("Never")}
                                     </Typography>
                                 </Stack>
                             </CardContent>
@@ -429,30 +466,40 @@ export default function SignatureConfirmation() {
                             <CardContent>
                                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Devices />
-                                    Device Information
+                                    {t("DeviceInformation")}
                                 </Typography>
 
                                 {deviceInfo ? (
                                     <Stack spacing={1}>
+                                        {currentHostName && (
+                                            <Typography variant="body2">
+                                                <strong>{t("HostName")}:</strong> {currentHostName}
+                                            </Typography>
+                                        )}
                                         <Typography variant="body2">
-                                            <strong>Device Name:</strong> {deviceInfo.deviceName}
+                                            <strong>{t("DeviceName")}:</strong> {deviceInfo.deviceName}
                                         </Typography>
                                         <Typography variant="body2">
-                                            <strong>MAC Address:</strong> {deviceInfo.macAddress}
+                                            <strong>{t("MACAddress")}:</strong> {deviceInfo.macAddress}
                                         </Typography>
                                         <Typography variant="body2">
-                                            <strong>IP Address:</strong> {deviceInfo.ipAddress}
+                                            <strong>{t("IPAddress")}:</strong> {deviceInfo.ipAddress}
+                                        </Typography>
+                                        {currentHostIP && currentHostIP !== deviceInfo.ipAddress && (
+                                            <Typography variant="body2">
+                                                <strong>{t("HostIP")}:</strong> {currentHostIP}
+                                            </Typography>
+                                        )}
+                                        <Typography variant="body2">
+                                            <strong>{t("ConnectionID")}:</strong> {signalRConnectionId || t("NotConnected")}
                                         </Typography>
                                         <Typography variant="body2">
-                                            <strong>Connection ID:</strong> {signalRConnectionId || 'Not connected'}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            <strong>Heartbeat:</strong> {isHeartbeatActive ? 'Active' : 'Inactive'}
+                                            <strong>{t("Heartbeat")}:</strong> {isHeartbeatActive ? t("Active") : t("Inactive")}
                                         </Typography>
                                     </Stack>
                                 ) : (
                                     <Typography color="text.secondary">
-                                        Device information loading...
+                                        {t("DeviceInformationLoading")}
                                     </Typography>
                                 )}
                             </CardContent>
@@ -516,7 +563,7 @@ export default function SignatureConfirmation() {
                         {isLoadingHtml ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                                 <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-                                    Loading document...
+                                    {t("LoadingDocument")}
                                 </Typography>
                                 <LinearProgress sx={{ width: '60%' }} />
                             </Box>
@@ -559,7 +606,7 @@ export default function SignatureConfirmation() {
                                         />
                                     ) : (
                                         <Alert severity="warning" sx={{ fontSize: '1.1rem' }}>
-                                            No review content available
+                                            {t("NoReviewContentAvailable")}
                                         </Alert>
                                     )}
 
@@ -607,7 +654,7 @@ export default function SignatureConfirmation() {
                                                 zIndex: 10
                                             }}
                                         >
-                                            <span className="sign-label">SIGN</span>
+                                            <span className="sign-label">{t("Sign")}</span>
                                         </Button>
                                     )}
 
@@ -615,9 +662,9 @@ export default function SignatureConfirmation() {
                                     {canvasSignature && !showSignaturePanel && (
                                         <Box sx={{ mt: 3, p: 2, border: '2px solid #274549', borderRadius: 2, bgcolor: '#f9f9f9' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                                <Typography variant="body1" sx={{ color: '#274549', fontWeight: 'bold' }}>Your Signature:</Typography>
+                                                <Typography variant="body1" sx={{ color: '#274549', fontWeight: 'bold' }}>{t("YourSignature")}:</Typography>
                                                 <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 1, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                                    <img src={canvasSignature} alt="Signature Preview" style={{ height: 60, maxWidth: 300, display: 'block' }} />
+                                                    <img src={canvasSignature} alt={t("SignaturePreview")} style={{ height: 60, maxWidth: 300, display: 'block' }} />
                                                 </Box>
                                                 <Button
                                                     onClick={() => {
@@ -629,7 +676,7 @@ export default function SignatureConfirmation() {
                                                     size="small"
                                                     sx={{ color: '#274549', border: '1px solid #274549' }}
                                                 >
-                                                    Undo
+                                                    {t("Undo")}
                                                 </Button>
                                             </Box>
                                         </Box>
@@ -761,7 +808,7 @@ export default function SignatureConfirmation() {
                                                         checked={hasAgreedToTerms}
                                                         onChange={(e) => {
                                                             if (e.target.checked) {
-                                                                loadTermsAndConditions('en');
+                                                                loadTermsAndConditions();
                                                             } else {
                                                                 setHasAgreedToTerms(false);
                                                             }
@@ -776,9 +823,9 @@ export default function SignatureConfirmation() {
                                                 }
                                                 label={
                                                     <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                                        I agree to the Terms and Conditions {' '}
+                                                        {t("IAgreeToTheTermsAndConditions")} {' '}
                                                         <Button
-                                                            onClick={() => loadTermsAndConditions('en')}
+                                                            onClick={() => loadTermsAndConditions()}
                                                             sx={{
                                                                 textTransform: 'none',
                                                                 p: 0,
@@ -806,7 +853,7 @@ export default function SignatureConfirmation() {
                                                         textAlign: 'center'
                                                     }}
                                                 >
-                                                    Please read terms and conditions before submitting.
+                                                    {t("PleaseReadTermsAndConditionsBeforeSubmitting")}
                                                 </Typography>
                                             )}
                                         </Box>
@@ -856,7 +903,7 @@ export default function SignatureConfirmation() {
                                                     height: isMobile ? 36 : 40
                                                 }}
                                             >
-                                                Back
+                                                {t("Back")}
                                             </Button>
                                             <Button
                                                 onClick={handleSubmitCanvasSignature}
@@ -875,7 +922,7 @@ export default function SignatureConfirmation() {
                                                     }
                                                 }}
                                             >
-                                                {isSubmittingSignature ? (isMobile ? 'Sending...' : 'Submitting...') : (isMobile ? 'Submit Signature' : 'Submit Signature')}
+                                                {isSubmittingSignature ? (isMobile ? t("Sending") : t("Submitting")) : (isMobile ? t("SubmitSignature") : t("SubmitSignature"))}
                                             </Button>
                                         </Box>
                                     </Box>
@@ -913,7 +960,7 @@ export default function SignatureConfirmation() {
                     }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Description />
-                            <Typography variant="h6">Terms and Conditions</Typography>
+                            <Typography variant="h6">{t("TermsAndConditions")}</Typography>
                         </Box>
                         <Button
                             onClick={() => setTermsDialogOpen(false)}
@@ -941,7 +988,7 @@ export default function SignatureConfirmation() {
                         {isLoadingTerms ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                                 <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-                                    Loading terms and conditions...
+                                    {t("LoadingTermsAndConditions")}
                                 </Typography>
                                 <LinearProgress sx={{ width: '60%' }} />
                             </Box>
@@ -992,7 +1039,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            Cancel
+                            {t("Cancel")}
                         </Button>
                         <Button
                             onClick={handleAgreeToTerms}
@@ -1006,7 +1053,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            Agree & Continue
+                            {t("AgreeAndContinue")}
                         </Button>
                     </DialogActions>
                 </Dialog>

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Box, Button, Typography, Stack, Alert, useTheme, useMediaQuery } from '@mui/material';
 import { Clear, Edit } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 interface SignatureCanvasProps {
     width?: number;
@@ -21,7 +22,7 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
     const [isEmpty, setIsEmpty] = useState(true);
     const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 500, height: 200 });
-
+    const { t } = useTranslation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
@@ -245,7 +246,7 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
                         }
                     }}
                 >
-                    Clear
+                    {t("Clear")}
                 </Button>
 
                 <canvas
