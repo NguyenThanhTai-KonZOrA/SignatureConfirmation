@@ -32,7 +32,10 @@ import {
     Edit,
     Send,
     Close,
-    Description
+    Description,
+    Hotel,
+    Stars,
+    BeachAccess
 } from '@mui/icons-material';
 import MainLayout from "../layout/MainLayout";
 import { useDeviceManagerContext } from '../contexts/deviceManagerContext';
@@ -349,163 +352,265 @@ export default function SignatureConfirmation() {
 
     return (
         <MainLayout>
-            <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
-                <Typography variant="h4" gutterBottom sx={{ mb: 4, textAlign: 'center' }}>
-                    📝 {t("SystemTitle")}
-                </Typography>
-
-                {/* System Status */}
-                <Card elevation={3} sx={{ mb: 3 }}>
-                    <CardContent>
-                        <Typography variant="h6" gutterBottom>
-                            {t("SystemStatus")}
-                        </Typography>
-
-                        <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                {stepDescriptions[currentStep as keyof typeof stepDescriptions]}
-                            </Typography>
-                            <LinearProgress
-                                variant="determinate"
-                                value={stepProgress[currentStep as keyof typeof stepProgress]}
-                                sx={{ height: 8, borderRadius: 4 }}
-                            />
+            <Box sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: '#f5f7fa'
+            }}>
+                {/* Welcome Banner */}
+                <Box sx={{
+                    background: 'linear-gradient(135deg, #274549 0%, #1a3033 100%)',
+                    color: 'white',
+                    py: { xs: 6, md: 8 },
+                    px: 3,
+                    textAlign: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'url(/images/TheGrandHoTram.png)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        opacity: 0.1,
+                        zIndex: 0
+                    }
+                }}>
+                    <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 800, mx: 'auto' }}>
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 2,
+                            mb: 2
+                        }}>
+                            {/* <Hotel sx={{ fontSize: { xs: 40, md: 56 } }} /> */}
+                            <Stars sx={{ fontSize: { xs: 32, md: 40 }, color: '#ffd700' }} />
+                            <Stars sx={{ fontSize: { xs: 32, md: 40 }, color: '#ffd700' }} />
+                            <Stars sx={{ fontSize: { xs: 32, md: 40 }, color: '#ffd700' }} />
+                            <Stars sx={{ fontSize: { xs: 32, md: 40 }, color: '#ffd700' }} />
+                            <Stars sx={{ fontSize: { xs: 32, md: 40 }, color: '#ffd700' }} />
                         </Box>
 
-                        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1 }}>
-                            <Chip
-                                icon={registrationResult?.success ? <CheckCircle /> : <Error />}
-                                label={registrationResult?.success ? t("DeviceRegistered") : t("NotRegistered")}
-                                color={registrationResult?.success ? 'success' : 'default'}
-                                variant={registrationResult?.success ? 'filled' : 'outlined'}
-                            />
-                            <Chip
-                                icon={isConnectedToSignalR ? <Wifi /> : <WifiOff />}
-                                label={isConnectedToSignalR ? t("ServiceConnected") : t("ServiceDisconnected")}
-                                color={isConnectedToSignalR ? 'success' : 'default'}
-                                variant={isConnectedToSignalR ? 'filled' : 'outlined'}
-                            />
-                            <Chip
-                                icon={<Devices />}
-                                label={isReady ? t("ReadyForSignatures") : t("Initializing")}
-                                color={isReady ? 'success' : 'default'}
-                                variant={isReady ? 'filled' : 'outlined'}
-                            />
-                            {totalRequests > 0 && (
-                                <Chip
-                                    label={`${t("TotalRequests")}: ${totalRequests}`}
-                                    color="info"
-                                    variant="outlined"
+                        <Typography
+                            variant="h2"
+                            sx={{
+                                fontWeight: 700,
+                                fontSize: { xs: '2rem', md: '2rem' },
+                                mb: 2,
+                                textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                                letterSpacing: '0.5px'
+                            }}
+                        >
+                            {t("WelcomeToTheGrandHoTram") || "Welcome to The Grand Hồ Tràm"}
+                        </Typography>
+
+                        <Typography
+                            variant="h5"
+                            sx={{
+                                fontWeight: 300,
+                                fontSize: { xs: '2rem', md: '1.5rem' },
+                                mb: 3,
+                                opacity: 0.95,
+                                lineHeight: 1.6
+                            }}
+                        >
+                            {t("SignatureConfirmationSystem") || "Digital Signature Confirmation System"}
+                        </Typography>
+
+                        <Box sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 2,
+                            flexWrap: 'wrap'
+                        }}>
+                            {/* <Typography variant="h5"
+                                sx={{
+                                    fontWeight: 300,
+                                    fontSize: { xs: '1.1rem', md: '1.5rem' },
+                                    mb: 3,
+                                    opacity: 0.95,
+                                    lineHeight: 1.6
+                                }}>
+                                {t("LuxuryResortExperience") || "Luxury Resort Experience"}
+                            </Typography> */}
+                            {/* {isReady && (
+                                <Chip 
+                                    icon={<CheckCircle />}
+                                    label={t("SystemReady") || "System Ready"}
+                                    sx={{ 
+                                        bgcolor: 'rgba(76, 175, 80, 0.9)',
+                                        color: 'white',
+                                        backdropFilter: 'blur(10px)',
+                                        fontWeight: 500,
+                                        fontSize: '0.9rem',
+                                        py: 2.5,
+                                        px: 1
+                                    }}
                                 />
-                            )}
-                        </Stack>
+                            )} */}
+                        </Box>
 
-                        {deviceError && (
-                            <Alert severity="error" sx={{ mt: 2 }} action={
-                                <Button color="inherit" size="small" onClick={retry}>
-                                    {t("Retry")}
-                                </Button>
-                            }>
-                                {deviceError}
-                            </Alert>
+                        {!isReady && (
+                            <Box sx={{ mt: 4 }}>
+                                <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
+                                    {stepDescriptions[currentStep as keyof typeof stepDescriptions]}
+                                </Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={stepProgress[currentStep as keyof typeof stepProgress]}
+                                    sx={{
+                                        height: 8,
+                                        borderRadius: 4,
+                                        bgcolor: 'rgba(255,255,255,0.2)',
+                                        '& .MuiLinearProgress-bar': {
+                                            bgcolor: 'white',
+                                            borderRadius: 4
+                                        }
+                                    }}
+                                />
+                            </Box>
                         )}
-
-                        {isReady && (
-                            <Alert severity="success" sx={{ mt: 2 }}>
-                                <Typography variant="body2">
-                                    🎉 {t("SystemReadyMessage")}
-                                </Typography>
-                            </Alert>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* User & Device Information */}
-                <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
-                    <Box sx={{ flex: 1 }}>
-                        <Card elevation={2}>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Person />
-                                    {t("UserInformation")}
-                                </Typography>
-
-                                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                                    <Avatar sx={{ bgcolor: 'primary.main' }}>
-                                        <Person />
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="subtitle1" fontWeight="bold">
-                                            {t("StaffMember")}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {t("Device")}: {deviceInfo?.deviceName || t("UnknownDevice")}
-                                        </Typography>
-                                    </Box>
-                                </Stack>
-
-                                <Divider sx={{ my: 2 }} />
-
-                                <Stack spacing={1}>
-                                    <Typography variant="body2">
-                                        <strong>{t("Status")}:</strong> {isReady ? t("Active") : t("Initializing")}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        <strong>{t("Location")}:</strong> {deviceInfo?.ipAddress || t("Unknown")}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        <strong>{t("LastActivity")}:</strong> {lastHeartbeat ? lastHeartbeat.toLocaleTimeString() : t("Never")}
-                                    </Typography>
-                                </Stack>
-                            </CardContent>
-                        </Card>
-                    </Box>
-
-                    <Box sx={{ flex: 1 }}>
-                        <Card elevation={2}>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Devices />
-                                    {t("DeviceInformation")}
-                                </Typography>
-
-                                {deviceInfo ? (
-                                    <Stack spacing={1}>
-                                        {currentHostName && (
-                                            <Typography variant="body2">
-                                                <strong>{t("HostName")}:</strong> {currentHostName}
-                                            </Typography>
-                                        )}
-                                        <Typography variant="body2">
-                                            <strong>{t("DeviceName")}:</strong> {deviceInfo.deviceName}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            <strong>{t("MACAddress")}:</strong> {deviceInfo.macAddress}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            <strong>{t("IPAddress")}:</strong> {deviceInfo.ipAddress}
-                                        </Typography>
-                                        {currentHostIP && currentHostIP !== deviceInfo.ipAddress && (
-                                            <Typography variant="body2">
-                                                <strong>{t("HostIP")}:</strong> {currentHostIP}
-                                            </Typography>
-                                        )}
-                                        <Typography variant="body2">
-                                            <strong>{t("ConnectionID")}:</strong> {signalRConnectionId || t("NotConnected")}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            <strong>{t("Heartbeat")}:</strong> {isHeartbeatActive ? t("Active") : t("Inactive")}
-                                        </Typography>
-                                    </Stack>
-                                ) : (
-                                    <Typography color="text.secondary">
-                                        {t("DeviceInformationLoading")}
-                                    </Typography>
-                                )}
-                            </CardContent>
-                        </Card>
                     </Box>
                 </Box>
+
+                {/* Main Content Area */}
+                <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'center',
+                    py: { xs: 4, md: 6 },
+                    px: 3
+                }}>
+                    {isReady ? (
+                        <Card
+                            elevation={0}
+                            sx={{
+                                maxWidth: 600,
+                                width: '100%',
+                                textAlign: 'center',
+                                borderRadius: 4,
+                                border: '2px dashed #274549',
+                                bgcolor: 'white',
+                                p: { xs: 4, md: 6 }
+                            }}
+                        >
+                            <Assignment sx={{ fontSize: 60, color: '#274549', mb: 3 }} />
+                            <Typography variant="h6" sx={{ fontWeight: 500, color: '#274549', mb: 2 }}>
+                                {t("WaitingForSignatureRequest") || "Waiting for Signature Request"}
+                            </Typography>
+                            {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                {t("ReadyToReceiveMessage") || "The system is ready to receive signature requests from staff members."}
+                            </Typography> */}
+                            {/* {totalRequests > 0 && (
+                                <Chip
+                                    label={`${t("TotalRequests")}: ${totalRequests}`}
+                                    color="primary"
+                                    variant="outlined"
+                                    size="medium"
+                                    sx={{ fontSize: '1rem', py: 2.5 }}
+                                />
+                            )} */}
+                        </Card>
+                    ) : (
+                        <Card
+                            elevation={0}
+                            sx={{
+                                maxWidth: 600,
+                                width: '100%',
+                                textAlign: 'center',
+                                borderRadius: 4,
+                                bgcolor: 'white',
+                                p: { xs: 4, md: 6 },
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.08)'
+                            }}
+                        >
+                            <Box sx={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: '50%',
+                                bgcolor: '#f5f7fa',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mx: 'auto',
+                                mb: 3
+                            }}>
+                                <Devices sx={{ fontSize: 40, color: '#274549' }} />
+                            </Box>
+                            <Typography variant="h5" sx={{ fontWeight: 600, color: '#274549', mb: 2 }}>
+                                {t("InitializingSystem") || "Initializing System..."}
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary">
+                                {t("PleaseWait") || "Please wait while we set up your device for signature confirmation."}
+                            </Typography>
+
+                            {deviceError && (
+                                <Alert severity="error" sx={{ mt: 3, textAlign: 'left' }} action={
+                                    <Button color="inherit" size="small" onClick={retry}>
+                                        {t("Retry")}
+                                    </Button>
+                                }>
+                                    {deviceError}
+                                </Alert>
+                            )}
+                        </Card>
+                    )}
+                </Box>
+
+                {/* System Status Footer */}
+                {/* <Box sx={{ 
+                    bgcolor: 'white',
+                    borderTop: '1px solid #e0e0e0',
+                    py: 2,
+                    px: 3,
+                    boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
+                }}>
+                    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+                        <Stack 
+                            direction={{ xs: 'column', md: 'row' }} 
+                            spacing={2} 
+                            alignItems="center"
+                            justifyContent="space-between"
+                        >
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                                {t("SystemStatus")}: {stepDescriptions[currentStep as keyof typeof stepDescriptions]}
+                            </Typography>
+                            
+                            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1, justifyContent: 'center' }}>
+                                <Chip
+                                    size="small"
+                                    icon={registrationResult?.success ? <CheckCircle /> : <Error />}
+                                    label={registrationResult?.success ? t("DeviceRegistered") : t("NotRegistered")}
+                                    color={registrationResult?.success ? 'success' : 'default'}
+                                    variant={registrationResult?.success ? 'filled' : 'outlined'}
+                                />
+                                <Chip
+                                    size="small"
+                                    icon={isConnectedToSignalR ? <Wifi /> : <WifiOff />}
+                                    label={isConnectedToSignalR ? t("ServiceConnected") : t("ServiceDisconnected")}
+                                    color={isConnectedToSignalR ? 'success' : 'default'}
+                                    variant={isConnectedToSignalR ? 'filled' : 'outlined'}
+                                />
+                                <Chip
+                                    size="small"
+                                    icon={<Devices />}
+                                    label={isReady ? t("ReadyForSignatures") : t("Initializing")}
+                                    color={isReady ? 'success' : 'default'}
+                                    variant={isReady ? 'filled' : 'outlined'}
+                                />
+                            </Stack>
+                        </Stack>
+                    </Box>
+                </Box> */}
 
                 {/* Signature Dialog with Canvas */}
                 <Dialog

@@ -131,17 +131,32 @@ export default function MainLayout({
       )}
 
       {/* Content */}
-      <Box flex={1} display="flex" flexDirection="column">
+      <Box
+        flex={1}
+        display="flex"
+        flexDirection="column"
+        sx={{ pb: '60px' }} // Add padding to avoid footer overlap
+      >
         {children}
       </Box>
 
-      {/* Language selector ở bottom center */}
+      {/* Fixed Footer with Language selector */}
       <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        py={3}
-        bgcolor="#f8f8f8"
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          bgcolor: 'white',
+          borderTop: '1px solid #e0e0e0',
+          py: 1.5,
+          px: 2,
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
+          zIndex: 1000,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
       >
         <Select
           value={currentLang}
@@ -152,26 +167,32 @@ export default function MainLayout({
             bgcolor: "#fff",
             color: "#274549",
             fontWeight: 600,
-            minWidth: 120,
+            minWidth: 150,
             "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#e0e0e0",
+              borderColor: "#274549",
+              borderWidth: 1.5,
               borderRadius: 2
             },
             "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#274549"
+              borderColor: "#1a3033",
+              borderWidth: 2
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#274549",
+              borderWidth: 2
             }
           }}
         >
           <MenuItem value="vi">
             <Box display="flex" alignItems="center" gap={1}>
-              <img src="/images/vn.png" width={18} height={14} alt="VN" />
-              <Typography>Tiếng Việt</Typography>
+              <img src="/images/vn.png" width={20} height={15} alt="VN" />
+              <Typography fontWeight={500}>Tiếng Việt</Typography>
             </Box>
           </MenuItem>
           <MenuItem value="en">
             <Box display="flex" alignItems="center" gap={1}>
-              <img src="/images/us.png" width={18} height={14} alt="EN" />
-              <Typography>English</Typography>
+              <img src="/images/us.png" width={20} height={15} alt="EN" />
+              <Typography fontWeight={500}>English</Typography>
             </Box>
           </MenuItem>
         </Select>
