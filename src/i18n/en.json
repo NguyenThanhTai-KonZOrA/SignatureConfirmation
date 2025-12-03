@@ -9,7 +9,7 @@
   "ReadyToReceiveMessage": "The system is ready to receive signature requests from staff members.",
   "InitializingSystem": "Initializing System...",
   "PleaseWait": "Please wait while we set up your device for signature confirmation.",
-  "SystemStatus": "System Status",
+  "SystemStatus": "System Status: ",
   "Retry": "Retry",
   "SystemReadyMessage": "System is ready! Waiting for signature requests...",
   "UserInformation": "User Information",
@@ -55,5 +55,15 @@
   "TotalRequests": "Total Requests",
   "HostName": "Host Name",
   "IPAddressLabel": "IP Address",
-  "LastActivity": "Last Activity"
+  "LastActivity": "Last Activity",
+  "PatronDevice": "Patron Device",
+  "StaffDevice": "Workstation",
+  "Online": "Online",
+  "Offline": "Offline",
+  "Available": "Available",
+  "Yes": "Yes",
+  "No": "No",
+  "PleaseConnect": "Please reconnect the device.",
+  "FailedToLoadDeviceInformation": "Failed to load device information",
+  "DeviceMappingError": "Device mapping error"
 }

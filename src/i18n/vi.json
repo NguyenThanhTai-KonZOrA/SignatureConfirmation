@@ -9,7 +9,7 @@
   "ReadyToReceiveMessage": "Hệ thống đã sẵn sàng nhận yêu cầu chữ ký từ nhân viên.",
   "InitializingSystem": "Đang Khởi Tạo Hệ Thống...",
   "PleaseWait": "Vui lòng đợi trong khi chúng tôi thiết lập thiết bị của bạn để xác nhận chữ ký.",
-  "SystemStatus": "Trạng Thái Hệ Thống",
+  "SystemStatus": "Trạng Thái Hệ Thống: ",
   "Retry": "Thử Lại",
   "SystemReadyMessage": "Hệ thống đã sẵn sàng! Đang chờ các yêu cầu chữ ký...",
   "UserInformation": "Thông Tin Người Dùng",
@@ -55,5 +55,15 @@
   "TotalRequests": "Tổng Số Yêu Cầu",
   "HostName": "Tên Máy Chủ",
   "IPAddressLabel": "Địa Chỉ IP",
-  "LastActivity": "Hoạt Động Cuối"
+  "LastActivity": "Hoạt Động Cuối",
+  "PatronDevice": "Thiết Bị Khách Hàng",
+  "StaffDevice": "Workstation",
+  "Online": "Trực Tuyến",
+  "Offline": "Ngoại Tuyến",
+  "Available": "Khả Dụng",
+  "Yes": "Có",
+  "No": "Không",
+  "PleaseConnect": "Vui lòng kết nối lại thiết bị.",
+  "FailedToLoadDeviceInformation": "Không thể tải thông tin thiết bị",
+  "DeviceMappingError": "Lỗi ánh xạ thiết bị"
 }

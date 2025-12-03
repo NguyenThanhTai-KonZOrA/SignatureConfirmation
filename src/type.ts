@@ -141,7 +141,28 @@ export interface GetTermsResponse {
     htmlContent: string;
 }
 
-export interface CurrentrHostNameResponse {
-  computerName: string;
-  ip: string;
+export interface CurrentHostNameResponse {
+    computerName: string;
+    ip: string;
+}
+
+export interface DeviceMappingResponse {
+    id: number;
+    location: string;
+    patronDevice: PatronDeviceData;
+    staffDevice: StaffDeviceData;
+}
+
+export interface PatronDeviceData {
+    id: number;
+    deviceName: string;
+    isOnline: boolean;
+    IsAvailable: boolean;
+}
+
+export interface StaffDeviceData {
+    id: number;
+    deviceName: string;
+    isOnline: boolean;
+    IsAvailable: boolean;
 }

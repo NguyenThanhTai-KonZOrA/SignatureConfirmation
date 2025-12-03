@@ -42,7 +42,7 @@ import { useDeviceManagerContext } from '../contexts/deviceManagerContext';
 import { useSignatureRequest } from '../hooks/useSignatureRequest';
 import { SignatureCanvas } from '../components/SignatureCanvas';
 import { signatureApiService } from '../services/signatrueApiService';
-import type { SignatureMessageData, SignatureConfirmRequest } from '../type';
+import type { SignatureMessageData, SignatureConfirmRequest, DeviceMappingResponse } from '../type';
 import { useTranslation } from 'react-i18next';
 
 const stepDescriptions = {
@@ -52,7 +52,7 @@ const stepDescriptions = {
     'connecting-signalr': '🔗 Connecting to signature service',
     'updating-connection': '🔄 Updating connection',
     'starting-heartbeat': '💓 Starting monitoring',
-    'ready': '✅ Ready to receive signature requests!'
+    'ready': ''
 };
 
 const stepProgress = {
@@ -85,6 +85,11 @@ export default function SignatureConfirmation() {
     // Current hostname state
     const [currentHostName, setCurrentHostName] = useState<string>('');
     const [currentHostIP, setCurrentHostIP] = useState<string>('');
+
+    // Device mapping information state
+    const [deviceMapping, setDeviceMapping] = useState<DeviceMappingResponse | null>(null);
+    const [isLoadingDeviceMapping, setIsLoadingDeviceMapping] = useState(false);
+    const [deviceMappingError, setDeviceMappingError] = useState<string | null>(null);
 
     // Responsive design hooks
     const theme = useTheme();
@@ -123,6 +128,48 @@ export default function SignatureConfirmation() {
 
         loadCurrentHostName();
     }, []);
+
+    // Load device mapping information on mount
+    useEffect(() => {
+        const loadDeviceMapping = async () => {
+            setIsLoadingDeviceMapping(true);
+            setDeviceMappingError(null);
+            try {
+                console.log('🔄 Fetching patron device information...');
+                const response = await signatureApiService.getPatronDeviceInformation();
+                console.log('✅ Patron device information response:', response);
+
+                if (response) {
+                    setDeviceMapping(response);
+
+                    // Check if both devices are online
+                    const patronOnline = response.patronDevice?.isOnline;
+                    const staffOnline = response.staffDevice?.isOnline;
+
+                    if (!staffOnline) {
+                        const offlineDevices = [];
+                        if (!patronOnline) offlineDevices.push('PatronDevice');
+                        //if (!staffOnline) offlineDevices.push('StaffDevice');
+
+                        setDeviceMappingError(`${t(offlineDevices.join(' and '))} ${t('Offline')}. ${t('PleaseConnect')}`);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Failed to fetch patron device information:', error);
+                setDeviceMappingError(t('Failed to load device information'));
+            } finally {
+                setIsLoadingDeviceMapping(false);
+            }
+        };
+
+        loadDeviceMapping();
+
+        // Refresh device mapping every 30 seconds
+        const interval = setInterval(loadDeviceMapping, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     // Device Manager Context
     const {
         registrationResult,
@@ -485,11 +532,14 @@ export default function SignatureConfirmation() {
                 <Box sx={{
                     flex: 1,
                     display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
                     py: { xs: 4, md: 6 },
-                    px: 3
+                    px: 3,
+                    gap: 3
                 }}>
+                    {/* Status Card */}
                     {isReady ? (
                         <Card
                             elevation={0}
@@ -507,18 +557,6 @@ export default function SignatureConfirmation() {
                             <Typography variant="h6" sx={{ fontWeight: 500, color: '#274549', mb: 2 }}>
                                 {t("WaitingForSignatureRequest") || "Waiting for Signature Request"}
                             </Typography>
-                            {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                                {t("ReadyToReceiveMessage") || "The system is ready to receive signature requests from staff members."}
-                            </Typography> */}
-                            {/* {totalRequests > 0 && (
-                                <Chip
-                                    label={`${t("TotalRequests")}: ${totalRequests}`}
-                                    color="primary"
-                                    variant="outlined"
-                                    size="medium"
-                                    sx={{ fontSize: '1rem', py: 2.5 }}
-                                />
-                            )} */}
                         </Card>
                     ) : (
                         <Card
@@ -564,53 +602,252 @@ export default function SignatureConfirmation() {
                             )}
                         </Card>
                     )}
-                </Box>
 
-                {/* System Status Footer */}
-                {/* <Box sx={{ 
-                    bgcolor: 'white',
-                    borderTop: '1px solid #e0e0e0',
-                    py: 2,
-                    px: 3,
-                    boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
-                }}>
-                    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-                        <Stack 
-                            direction={{ xs: 'column', md: 'row' }} 
-                            spacing={2} 
-                            alignItems="center"
-                            justifyContent="space-between"
+                    {/* Device Information - Separate Row */}
+                    {deviceMapping && (
+                        <Card
+                            elevation={3}
+                            sx={{
+                                maxWidth: 600,
+                                width: '100%',
+                                borderRadius: 3,
+                                border: deviceMappingError ? '2px solid #274549' : '2px solid #e0e0e0',
+                                bgcolor: 'white',
+                                p: { xs: 3, md: 4 },
+                                boxShadow: deviceMappingError
+                                    ? '0 4px 20px rgba(244, 67, 54, 0.2)'
+                                    : '0 4px 12px rgba(0,0,0,0.08)',
+                                transition: 'all 0.3s ease'
+                            }}
                         >
-                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                                {t("SystemStatus")}: {stepDescriptions[currentStep as keyof typeof stepDescriptions]}
+                            <Typography variant="h6" sx={{
+                                fontWeight: 600,
+                                color: '#274549',
+                                mb: 3,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                pb: 2,
+                                borderBottom: '2px solid #f0f0f0'
+                            }}>
+                                <Devices sx={{ fontSize: 28 }} />
+                                {t("DeviceInformation") || "Device Information"}
                             </Typography>
-                            
-                            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1, justifyContent: 'center' }}>
-                                <Chip
-                                    size="small"
-                                    icon={registrationResult?.success ? <CheckCircle /> : <Error />}
-                                    label={registrationResult?.success ? t("DeviceRegistered") : t("NotRegistered")}
-                                    color={registrationResult?.success ? 'success' : 'default'}
-                                    variant={registrationResult?.success ? 'filled' : 'outlined'}
-                                />
-                                <Chip
-                                    size="small"
-                                    icon={isConnectedToSignalR ? <Wifi /> : <WifiOff />}
-                                    label={isConnectedToSignalR ? t("ServiceConnected") : t("ServiceDisconnected")}
-                                    color={isConnectedToSignalR ? 'success' : 'default'}
-                                    variant={isConnectedToSignalR ? 'filled' : 'outlined'}
-                                />
-                                <Chip
-                                    size="small"
-                                    icon={<Devices />}
-                                    label={isReady ? t("ReadyForSignatures") : t("Initializing")}
-                                    color={isReady ? 'success' : 'default'}
-                                    variant={isReady ? 'filled' : 'outlined'}
-                                />
-                            </Stack>
-                        </Stack>
-                    </Box>
-                </Box> */}
+
+                            {isLoadingDeviceMapping ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                                    <LinearProgress sx={{ width: '100%' }} />
+                                </Box>
+                            ) : (
+                                <>
+                                    {/* Location */}
+                                    {/* <Box sx={{
+                                        mb: 3,
+                                        p: 2.5,
+                                        bgcolor: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%)',
+                                        borderRadius: 2,
+                                        border: '1px solid #e0e0e0'
+                                    }}>
+                                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 1, fontSize: '0.85rem' }}>
+                                            📍 {t("Location") || "Location"}
+                                        </Typography>
+                                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#274549' }}>
+                                            {deviceMapping.location || 'N/A'}
+                                        </Typography>
+                                    </Box> */}
+
+                                    {/* Staff Device - Full Width */}
+                                    <Box sx={{
+                                        p: 3,
+                                        bgcolor: '#f8f9fa',
+                                        borderRadius: 2,
+                                        border: '1px solid #e0e0e0'
+                                    }}>
+                                        <Typography variant="subtitle1" sx={{
+                                            fontWeight: 700,
+                                            color: '#274549',
+                                            mb: 3,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                            fontSize: '1.2rem'
+                                        }}>
+                                            💼 {t("StaffDevice") || "Staff Device"}
+                                        </Typography>
+
+                                        <Box sx={{
+                                            display: 'grid',
+                                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                                            gap: 3,
+                                            mb: 3
+                                        }}>
+                                            {/* Device Name */}
+                                            <Box sx={{
+                                                p: 2.5,
+                                                bgcolor: 'white',
+                                                borderRadius: 2,
+                                                border: '1px solid #e0e0e0',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                            }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{
+                                                    fontWeight: 600,
+                                                    display: 'block',
+                                                    mb: 1.5,
+                                                    fontSize: '0.75rem',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    {t("DeviceName") || "Device Name"}
+                                                </Typography>
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 700,
+                                                    color: '#1a1a1a',
+                                                    fontSize: '0.875rem'
+                                                }}>
+                                                    {deviceMapping.staffDevice?.deviceName || 'N/A'}
+                                                </Typography>
+                                            </Box>
+
+                                            {/* Status */}
+                                            <Box sx={{
+                                                p: 2.5,
+                                                bgcolor: 'white',
+                                                borderRadius: 2,
+                                                border: '1px solid #e0e0e0',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'space-between'
+                                            }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{
+                                                    fontWeight: 600,
+                                                    display: 'block',
+                                                    mb: 1.5,
+                                                    fontSize: '0.875rem',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    {t("Status") || "Status"}
+                                                </Typography>
+                                                <Chip
+                                                    label={deviceMapping.staffDevice?.isOnline ? t("Online") || "Online" : t("Offline") || "Offline"}
+                                                    color={deviceMapping.staffDevice?.isOnline ? 'success' : 'error'}
+                                                    sx={{
+                                                        height: 36,
+                                                        fontSize: '1rem',
+                                                        fontWeight: 700,
+                                                        px: 2,
+                                                        '& .MuiChip-label': {
+                                                            px: 1
+                                                        }
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Box>
+
+                                        {/* System Status - Integrated */}
+                                        <Box sx={{
+                                            pt: 3,
+                                            borderTop: '2px solid #e0e0e0'
+                                        }}>
+                                            <Typography variant="caption" color="text.secondary" sx={{
+                                                fontWeight: 600,
+                                                display: 'block',
+                                                mb: 2,
+                                                fontSize: '0.75rem',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                ⚙️ {t("SystemStatus") || "System Status"}
+                                            </Typography>
+
+                                            <Stack
+                                                direction={{ xs: 'column', sm: 'row' }}
+                                                spacing={1.5}
+                                                flexWrap="wrap"
+                                                sx={{ gap: 1.5 }}
+                                            >
+                                                <Chip
+                                                    size="small"
+                                                    icon={registrationResult?.success ? <CheckCircle /> : <Error />}
+                                                    label={registrationResult?.success ? t("DeviceRegistered") : t("NotRegistered")}
+                                                    color={registrationResult?.success ? 'success' : 'default'}
+                                                    variant={registrationResult?.success ? 'filled' : 'outlined'}
+                                                    sx={{ 
+                                                        height: 28,
+                                                        fontSize: '0.5rem',
+                                                        fontWeight: 600
+                                                    }}
+                                                />
+
+                                                <Chip
+                                                    size="small"
+                                                    icon={isConnectedToSignalR ? <Wifi /> : <WifiOff />}
+                                                    label={isConnectedToSignalR ? t("ServiceConnected") : t("ServiceDisconnected")}
+                                                    color={isConnectedToSignalR ? 'success' : 'default'}
+                                                    variant={isConnectedToSignalR ? 'filled' : 'outlined'}
+                                                    sx={{
+                                                        height: 28,
+                                                        fontSize: '0.5rem',
+                                                        fontWeight: 600
+                                                    }}
+                                                />
+
+                                                <Chip
+                                                    size="small"
+                                                    icon={<Devices />}
+                                                    label={isReady ? t("ReadyForSignatures") : t("Initializing")}
+                                                    color={isReady ? 'success' : 'default'}
+                                                    variant={isReady ? 'filled' : 'outlined'}
+                                                    sx={{
+                                                        height: 28,
+                                                        fontSize: '0.5rem',
+                                                        fontWeight: 600
+                                                    }}
+                                                />
+                                            </Stack>
+
+                                            {/* Device Error Alert */}
+                                            {deviceError && (
+                                                <Alert
+                                                    severity="error"
+                                                    sx={{
+                                                        mt: 2,
+                                                        borderRadius: 2,
+                                                        fontSize: '0.85rem'
+                                                    }}
+                                                    action={
+                                                        <Button color="inherit" size="small" onClick={retry}>
+                                                            {t("Retry")}
+                                                        </Button>
+                                                    }
+                                                >
+                                                    {deviceError}
+                                                </Alert>
+                                            )}
+                                        </Box>
+                                    </Box>
+
+                                    {/* Warning Alert if any device is offline */}
+                                    {deviceMappingError && (
+                                        <Alert
+                                            severity="warning"
+                                            sx={{
+                                                mt: 3,
+                                                borderRadius: 2,
+                                                fontWeight: 500,
+                                                fontSize: '0.95rem'
+                                            }}
+                                            icon={<Error sx={{ fontSize: 24 }} />}
+                                        >
+                                            {deviceMappingError}
+                                        </Alert>
+                                    )}
+                                </>
+                            )}
+                        </Card>
+                    )}
+                </Box>
 
                 {/* Signature Dialog with Canvas */}
                 <Dialog
@@ -1163,6 +1400,6 @@ export default function SignatureConfirmation() {
                     </DialogActions>
                 </Dialog>
             </Box>
-        </MainLayout>
+        </MainLayout >
     );
 }

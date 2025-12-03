@@ -1,6 +1,17 @@
 import axios from "axios";
 import CacheBuster from "../utils/cacheBuster";
-import type { CurrentrHostNameResponse, GetTermsResponse, RegisterDeviceRequest, RegisterDeviceResponse, ReviewableSignatureResponse, SignatureConfirmRequest, SignatureConfirmResponse, UpdateConnectionRequest, UpdateConnectionResponse } from "../type";
+import type {
+    CurrentHostNameResponse,
+    DeviceMappingResponse,
+    GetTermsResponse,
+    RegisterDeviceRequest,
+    RegisterDeviceResponse,
+    ReviewableSignatureResponse,
+    SignatureConfirmRequest,
+    SignatureConfirmResponse,
+    UpdateConnectionRequest,
+    UpdateConnectionResponse
+} from "../type";
 
 const API_BASE = (window as any)._env_?.API_BASE;
 const api = axios.create({
@@ -130,8 +141,18 @@ export const signatureApiService = {
         }
     },
 
-    getCurrentHostName: async (): Promise<CurrentrHostNameResponse> => {
+    getCurrentHostName: async (): Promise<CurrentHostNameResponse> => {
         const res = await api.get(`/api/PatronDevice/client-name`);
         return unwrapApiEnvelope(res);
+    },
+
+    getPatronDeviceInformation: async (): Promise<DeviceMappingResponse> => {
+        try {
+            const response = await api.get(`/api/PatronDevice/get-infor`);
+            return unwrapApiEnvelope(response);
+        } catch (error) {
+            console.error('Error fetching patron device information:', error);
+            throw error;
+        }
     }
 };
