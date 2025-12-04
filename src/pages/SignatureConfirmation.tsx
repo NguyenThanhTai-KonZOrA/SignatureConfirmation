@@ -44,6 +44,8 @@ import { SignatureCanvas } from '../components/SignatureCanvas';
 import { signatureApiService } from '../services/signatrueApiService';
 import type { SignatureMessageData, SignatureConfirmRequest, DeviceMappingResponse } from '../type';
 import { useTranslation } from 'react-i18next';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import NetworkAlert from '../components/NetworkAlert';
 
 const stepDescriptions = {
     'idle': 'Initializing system...',
@@ -97,6 +99,10 @@ export default function SignatureConfirmation() {
     const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
     const { t, i18n } = useTranslation();
     const [selectedLanguage, setSelectedLanguage] = useState<string>(i18n.language || 'en');
+
+    // Network status monitoring
+    const networkStatus = useNetworkStatus();
+    const [wasOffline, setWasOffline] = useState(false);
 
     // Sync language when i18n language changes
     useEffect(() => {
@@ -183,6 +189,43 @@ export default function SignatureConfirmation() {
         currentStep,
         retry
     } = useDeviceManagerContext();
+
+    // Handle network status changes - auto reconnect when online
+    useEffect(() => {
+        const handleNetworkChange = async () => {
+            if (!networkStatus.isOnline || !networkStatus.isConnected) {
+                // Network lost
+                console.log('❌ Network connection lost');
+                setWasOffline(true);
+            } else if (wasOffline && networkStatus.isOnline && networkStatus.isConnected) {
+                // Network restored - auto reconnect
+                console.log('✅ Network connection restored - attempting auto reconnect...');
+                setWasOffline(false);
+                
+                // Clear any existing error messages
+                if (deviceError) {
+                    console.log('🧹 Clearing previous errors after network restore');
+                }
+                
+                // Clear device mapping error
+                setDeviceMappingError(null);
+                console.log('🧹 Clearing device mapping errors after network restore');
+                
+                // Wait a moment for network to stabilize
+                setTimeout(async () => {
+                    try {
+                        console.log('🔄 Auto-retrying connection after network restore...');
+                        await retry();
+                        console.log('✅ Auto-reconnect successful!');
+                    } catch (error) {
+                        console.error('❌ Auto-reconnect failed:', error);
+                    }
+                }, 1000);
+            }
+        };
+
+        handleNetworkChange();
+    }, [networkStatus.isOnline, networkStatus.isConnected, wasOffline, deviceError, retry]);
 
     // Signature Request Hook
     const {
@@ -399,6 +442,13 @@ export default function SignatureConfirmation() {
 
     return (
         <MainLayout>
+            {/* Network Status Alert */}
+            <NetworkAlert 
+                isOnline={networkStatus.isOnline}
+                isConnected={networkStatus.isConnected}
+                connectionType={networkStatus.connectionType}
+            />
+            
             <Box sx={{
                 minHeight: '100vh',
                 display: 'flex',
