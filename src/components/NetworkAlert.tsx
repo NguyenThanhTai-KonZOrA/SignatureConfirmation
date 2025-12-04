@@ -9,21 +9,20 @@ interface NetworkAlertProps {
   connectionType?: string;
 }
 
-const NetworkAlert: React.FC<NetworkAlertProps> = ({ 
-  isOnline, 
-  isConnected, 
-  connectionType 
+const NetworkAlert: React.FC<NetworkAlertProps> = ({
+  isOnline,
+  isConnected,
+  connectionType
 }) => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(true);
-
-  // Auto-hide alert after 5 seconds if network is restored
+  // Auto-hide alert after 200 seconds if network is restored
   useEffect(() => {
     if (!isOnline || !isConnected) {
       setIsVisible(true);
       const timer = setTimeout(() => {
         setIsVisible(false);
-      }, 5000); // 5 giây
+      }, 200000); // 200 seconds
 
       return () => clearTimeout(timer);
     }
@@ -33,6 +32,9 @@ const NetworkAlert: React.FC<NetworkAlertProps> = ({
   useEffect(() => {
     if (!isOnline || !isConnected) {
       setIsVisible(true);
+    } else {
+      // Ẩn ngay khi có network trở lại
+      setIsVisible(false);
     }
   }, [isOnline, isConnected]);
 
