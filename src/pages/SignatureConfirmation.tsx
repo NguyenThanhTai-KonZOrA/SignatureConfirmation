@@ -623,11 +623,11 @@ export default function SignatureConfirmation() {
                             <Typography variant="h6" sx={{
                                 fontWeight: 600,
                                 color: '#274549',
-                                mb: 3,
+                                mb: 0.5,
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 1,
-                                pb: 2,
+                                pb: 1,
                                 borderBottom: '2px solid #f0f0f0'
                             }}>
                                 <Devices sx={{ fontSize: 28 }} />
@@ -658,7 +658,7 @@ export default function SignatureConfirmation() {
 
                                     {/* Staff Device - Full Width */}
                                     <Box sx={{
-                                        p: 3,
+                                        p: 2,
                                         bgcolor: '#f8f9fa',
                                         borderRadius: 2,
                                         border: '1px solid #e0e0e0'
@@ -666,11 +666,11 @@ export default function SignatureConfirmation() {
                                         <Typography variant="subtitle1" sx={{
                                             fontWeight: 700,
                                             color: '#274549',
-                                            mb: 3,
+                                            mb: 2,
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: 1,
-                                            fontSize: '1.2rem'
+                                            fontSize: '1rem'
                                         }}>
                                             💼 {t("StaffDevice") || "Staff Device"}
                                         </Typography>
@@ -678,67 +678,52 @@ export default function SignatureConfirmation() {
                                         <Box sx={{
                                             display: 'grid',
                                             gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                                            gap: 3,
-                                            mb: 3
+                                            gap: 2,
+                                            mb: 2
                                         }}>
                                             {/* Device Name */}
-                                            <Box sx={{
-                                                p: 2.5,
-                                                bgcolor: 'white',
-                                                borderRadius: 2,
-                                                border: '1px solid #e0e0e0',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                                            }}>
+                                            <Box>
                                                 <Typography variant="caption" color="text.secondary" sx={{
                                                     fontWeight: 600,
                                                     display: 'block',
-                                                    mb: 1.5,
-                                                    fontSize: '0.75rem',
+                                                    mb: 0.5,
+                                                    fontSize: '0.7rem',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.5px'
                                                 }}>
-                                                    {t("DeviceName") || "Device Name"}
+                                                    🖥️ {t("DeviceName") || "Device Name"}
                                                 </Typography>
-                                                <Typography variant="h6" sx={{
+                                                <Typography variant="body2" sx={{
                                                     fontWeight: 700,
                                                     color: '#1a1a1a',
-                                                    fontSize: '0.875rem'
+                                                    fontSize: '0.85rem'
                                                 }}>
                                                     {deviceMapping.staffDevice?.deviceName || 'N/A'}
                                                 </Typography>
                                             </Box>
 
                                             {/* Status */}
-                                            <Box sx={{
-                                                p: 2.5,
-                                                bgcolor: 'white',
-                                                borderRadius: 2,
-                                                border: '1px solid #e0e0e0',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'space-between'
-                                            }}>
+                                            <Box>
                                                 <Typography variant="caption" color="text.secondary" sx={{
                                                     fontWeight: 600,
                                                     display: 'block',
-                                                    mb: 1.5,
-                                                    fontSize: '0.875rem',
+                                                    mb: 0.5,
+                                                    fontSize: '0.7rem',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.5px'
                                                 }}>
-                                                    {t("Status") || "Status"}
+                                                    📡 {t("Status") || "Status"}
                                                 </Typography>
                                                 <Chip
                                                     label={deviceMapping.staffDevice?.isOnline ? t("Online") || "Online" : t("Offline") || "Offline"}
                                                     color={deviceMapping.staffDevice?.isOnline ? 'success' : 'error'}
                                                     sx={{
-                                                        height: 36,
-                                                        fontSize: '1rem',
+                                                        height: 24,
+                                                        fontSize: '0.75rem',
                                                         fontWeight: 700,
-                                                        px: 2,
+                                                        px: 1,
                                                         '& .MuiChip-label': {
-                                                            px: 1
+                                                            px: 0.5
                                                         }
                                                     }}
                                                 />
@@ -747,14 +732,14 @@ export default function SignatureConfirmation() {
 
                                         {/* System Status - Integrated */}
                                         <Box sx={{
-                                            pt: 3,
-                                            borderTop: '2px solid #e0e0e0'
+                                            pt: 2,
+                                            borderTop: '1px solid #e0e0e0'
                                         }}>
                                             <Typography variant="caption" color="text.secondary" sx={{
                                                 fontWeight: 600,
                                                 display: 'block',
-                                                mb: 2,
-                                                fontSize: '0.75rem',
+                                                mb: 1,
+                                                fontSize: '0.7rem',
                                                 textTransform: 'uppercase',
                                                 letterSpacing: '0.5px'
                                             }}>
@@ -763,9 +748,9 @@ export default function SignatureConfirmation() {
 
                                             <Stack
                                                 direction={{ xs: 'column', sm: 'row' }}
-                                                spacing={1.5}
+                                                spacing={1}
                                                 flexWrap="wrap"
-                                                sx={{ gap: 1.5 }}
+                                                sx={{ gap: 1 }}
                                             >
                                                 <Chip
                                                     size="small"
@@ -773,9 +758,9 @@ export default function SignatureConfirmation() {
                                                     label={registrationResult?.success ? t("DeviceRegistered") : t("NotRegistered")}
                                                     color={registrationResult?.success ? 'success' : 'default'}
                                                     variant={registrationResult?.success ? 'filled' : 'outlined'}
-                                                    sx={{ 
-                                                        height: 28,
-                                                        fontSize: '0.5rem',
+                                                    sx={{
+                                                        height: 24,
+                                                        fontSize: '0.7rem',
                                                         fontWeight: 600
                                                     }}
                                                 />
@@ -787,8 +772,8 @@ export default function SignatureConfirmation() {
                                                     color={isConnectedToSignalR ? 'success' : 'default'}
                                                     variant={isConnectedToSignalR ? 'filled' : 'outlined'}
                                                     sx={{
-                                                        height: 28,
-                                                        fontSize: '0.5rem',
+                                                        height: 24,
+                                                        fontSize: '0.7rem',
                                                         fontWeight: 600
                                                     }}
                                                 />
@@ -800,8 +785,8 @@ export default function SignatureConfirmation() {
                                                     color={isReady ? 'success' : 'default'}
                                                     variant={isReady ? 'filled' : 'outlined'}
                                                     sx={{
-                                                        height: 28,
-                                                        fontSize: '0.5rem',
+                                                        height: 24,
+                                                        fontSize: '0.7rem',
                                                         fontWeight: 600
                                                     }}
                                                 />
@@ -812,12 +797,13 @@ export default function SignatureConfirmation() {
                                                 <Alert
                                                     severity="error"
                                                     sx={{
-                                                        mt: 2,
-                                                        borderRadius: 2,
-                                                        fontSize: '0.85rem'
+                                                        mt: 1.5,
+                                                        py: 0.5,
+                                                        borderRadius: 1,
+                                                        fontSize: '0.75rem'
                                                     }}
                                                     action={
-                                                        <Button color="inherit" size="small" onClick={retry}>
+                                                        <Button color="inherit" size="small" onClick={retry} sx={{ fontSize: '0.7rem' }}>
                                                             {t("Retry")}
                                                         </Button>
                                                     }
