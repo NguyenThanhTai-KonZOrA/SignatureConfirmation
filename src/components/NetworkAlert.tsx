@@ -28,12 +28,12 @@ const NetworkAlert: React.FC<NetworkAlertProps> = ({
     }
   }, [isOnline, isConnected]);
 
-  // Reset visibility khi network status thay đổi
+  // Reset visibility when network status changes
   useEffect(() => {
     if (!isOnline || !isConnected) {
       setIsVisible(true);
     } else {
-      // Ẩn ngay khi có network trở lại
+      // Hide alert when back online and connected
       setIsVisible(false);
     }
   }, [isOnline, isConnected]);

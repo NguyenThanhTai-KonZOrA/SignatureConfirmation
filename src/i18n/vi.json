@@ -65,5 +65,7 @@
   "No": "Không",
   "PleaseConnect": "Vui lòng kết nối lại thiết bị.",
   "FailedToLoadDeviceInformation": "Không thể tải thông tin thiết bị",
-  "DeviceMappingError": "Lỗi ánh xạ thiết bị"
+  "DeviceMappingError": "Lỗi ánh xạ thiết bị",
+  "NoInternetConnection": "Không có kết nối Internet",
+  "PleaseCheckConnection": "Vui lòng kiểm tra kết nối mạng."
 }

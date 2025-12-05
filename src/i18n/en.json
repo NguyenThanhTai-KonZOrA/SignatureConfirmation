@@ -65,5 +65,7 @@
   "No": "No",
   "PleaseConnect": "Please reconnect the device.",
   "FailedToLoadDeviceInformation": "Failed to load device information",
-  "DeviceMappingError": "Device mapping error"
+  "DeviceMappingError": "Device mapping error",
+  "NoInternetConnection": "No Internet Connection",
+  "PleaseCheckConnection": "Please check your network settings."
 }

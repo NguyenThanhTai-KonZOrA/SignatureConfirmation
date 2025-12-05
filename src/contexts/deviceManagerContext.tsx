@@ -30,10 +30,10 @@ export const DeviceManagerProvider: React.FC<DeviceManagerProviderProps> = ({
     options = {} 
 }) => {
     const deviceManagerData = useDeviceManager({
-        autoRegister: true,        // Tự động đăng ký device khi khởi động
-        autoConnect: true,         // Tự động kết nối SignalR
-        autoHeartbeat: true,       // Tự động bắt đầu heartbeat
-        heartbeatInterval: 30000,  // 30 giây
+        autoRegister: true,        // Auto register device on mount
+        autoConnect: true,         // Auto connect to SignalR
+        autoHeartbeat: true,       // Auto start heartbeat
+        heartbeatInterval: 30000,  // 30 seconds
         onRegistrationComplete: (result) => {
             if (result.success) {
                 console.log('🎉 Device registered automatically:', result);
