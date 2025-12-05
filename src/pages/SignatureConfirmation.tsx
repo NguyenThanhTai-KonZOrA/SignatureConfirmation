@@ -154,8 +154,8 @@ export default function SignatureConfirmation() {
 
                     if (!staffOnline) {
                         const offlineDevices = [];
-                        if (!patronOnline) offlineDevices.push('PatronDevice');
-                        //if (!staffOnline) offlineDevices.push('StaffDevice');
+                        //if (!patronOnline) offlineDevices.push('PatronDevice');
+                        if (!staffOnline) offlineDevices.push('StaffDevice');
 
                         setDeviceMappingError(`${t(offlineDevices.join(' and '))} ${t('Offline')}. ${t('PleaseConnect')}`);
                     }
@@ -201,16 +201,16 @@ export default function SignatureConfirmation() {
                 // Network restored - auto reconnect
                 console.log('✅ Network connection restored - attempting auto reconnect...');
                 setWasOffline(false);
-                
+
                 // Clear any existing error messages
                 if (deviceError) {
                     console.log('🧹 Clearing previous errors after network restore');
                 }
-                
+
                 // Clear device mapping error
                 setDeviceMappingError(null);
                 console.log('🧹 Clearing device mapping errors after network restore');
-                
+
                 // Wait a moment for network to stabilize
                 setTimeout(async () => {
                     try {
@@ -443,12 +443,12 @@ export default function SignatureConfirmation() {
     return (
         <MainLayout>
             {/* Network Status Alert */}
-            <NetworkAlert 
+            <NetworkAlert
                 isOnline={networkStatus.isOnline}
                 isConnected={networkStatus.isConnected}
                 connectionType={networkStatus.connectionType}
             />
-            
+
             <Box sx={{
                 minHeight: '100vh',
                 display: 'flex',
