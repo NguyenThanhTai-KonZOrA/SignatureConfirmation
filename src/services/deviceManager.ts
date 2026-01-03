@@ -1,4 +1,4 @@
-import { signatureApiService } from './signatrueApiService';
+import { signatureApiService } from './signatureApiService';
 import { getDeviceInfo, type DeviceInfo } from '../utils/deviceInfo';
 import type { RegisterDeviceRequest, RegisterDeviceResponse, UpdateConnectionRequest } from '../type';
 

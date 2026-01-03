@@ -22,7 +22,7 @@ import {
     Assignment,
     Schedule
 } from '@mui/icons-material';
-import { signatureApiService } from '../services/signatrueApiService';
+import { signatureApiService } from '../services/signatureApiService';
 import type { SignatureMessageData, SignatureConfirmRequest } from '../type';
 
 interface SignatureRequestDialogProps {

@@ -3,6 +3,8 @@ import CacheBuster from "../utils/cacheBuster";
 import type {
     CurrentHostNameResponse,
     DeviceMappingResponse,
+    GetNotificationRequest,
+    GetNotificationResponse,
     GetTermsResponse,
     RegisterDeviceRequest,
     RegisterDeviceResponse,
@@ -137,6 +139,16 @@ export const signatureApiService = {
             return unwrapApiEnvelope(response);
         } catch (error) {
             console.error('Error fetching terms and conditions:', error);
+            throw error;
+        }
+    },
+
+    getNotification: async (request: GetNotificationRequest): Promise<GetNotificationResponse> => {
+        try {
+            const response = await api.post(`/api/Documents/getNotification/`, request);
+            return unwrapApiEnvelope(response);
+        } catch (error) {
+            console.error('Error fetching notification:', error);
             throw error;
         }
     },

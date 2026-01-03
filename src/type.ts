@@ -141,6 +141,16 @@ export interface GetTermsResponse {
     htmlContent: string;
 }
 
+export interface GetNotificationResponse {
+    htmlContent: string;
+}
+
+export interface GetNotificationRequest {
+    Lang: string;
+    PatronId: number;
+    SignatureDataUrl?: string;
+}
+
 export interface CurrentHostNameResponse {
     computerName: string;
     ip: string;
