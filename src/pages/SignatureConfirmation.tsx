@@ -90,6 +90,15 @@ export default function SignatureConfirmation() {
     const [isLoadingNotification, setIsLoadingNotification] = useState(false);
     const [hasAgreedToNotification, setHasAgreedToNotification] = useState(false);
 
+    // Personal Notification states
+    const [personalNotificationDialogOpen, setPersonalNotificationDialogOpen] = useState(false);
+    const [personalNotificationContent, setPersonalNotificationContent] = useState<string>('');
+    const [isLoadingPersonalNotification, setIsLoadingPersonalNotification] = useState(false);
+    const [hasAgreedToPersonalNotification, setHasAgreedToPersonalNotification] = useState(false);
+
+    // Current Patron nationality
+    const [currentPatronNationality, setCurrentPatronNationality] = useState<string>('');
+
     // Current hostname state
     const [currentHostName, setCurrentHostName] = useState<string>('');
     const [currentHostIP, setCurrentHostIP] = useState<string>('');
@@ -243,11 +252,28 @@ export default function SignatureConfirmation() {
             console.log('📝 New signature request received:', data);
             setCurrentSignatureData(data);
 
+            // Auto change language based on patron nationality
+            let realNationality = 'en';
+            if (data && data.patronData && data.patronData.nationality === "704") {
+                // Vietnam nationality - switch to Vietnamese
+                console.log('🇻🇳 Patron is Vietnamese - switching to Vietnamese language');
+                setCurrentPatronNationality(data.patronData.nationality);
+                realNationality = "vi";
+                i18n.changeLanguage('vi'); // Auto switch to Vietnamese
+            } else {
+                // Other nationalities - switch to English
+                console.log('🌍 Patron is non-Vietnamese - switching to English language');
+                setCurrentPatronNationality(data?.patronData?.nationality || '');
+                realNationality = "en";
+                i18n.changeLanguage('en'); // Auto switch to English
+            }
+
             // Call getReviewableSignatures API
             setIsLoadingHtml(true);
             try {
-                console.log('🔄 Fetching reviewable signatures for patronId:', data.patronId, 'language:', selectedLanguage);
-                const response = await signatureApiService.getReviewableSignatures(data.patronId, selectedLanguage);
+                console.log('🔄 Fetching reviewable signatures for patronId:', data.patronId, 'language:', realNationality);
+
+                const response = await signatureApiService.getReviewableSignatures(data.patronId, realNationality);
                 console.log('✅ Reviewable signatures response:', response);
 
                 // Handle response format: { data: 'htmlcontent', message: ..., status: ..., success: ... }
@@ -319,6 +345,7 @@ export default function SignatureConfirmation() {
             setShowSignaturePanel(false);
             setHasAgreedToTerms(false);
             setHasAgreedToNotification(false);
+            setHasAgreedToPersonalNotification(false);
         }
     }, [signatureDialogOpen]);
 
@@ -328,7 +355,12 @@ export default function SignatureConfirmation() {
         setTermsDialogOpen(true);
         try {
             console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
-            const response = await signatureApiService.getTermsAndConditions(selectedLanguage);
+            let request = {
+                Lang: selectedLanguage,
+                PatronId: currentSignatureData?.patronId || 0,
+                SignatureDataUrl: canvasSignature || ''
+            };
+            const response = await signatureApiService.getTermsAndConditionsV2(request);
             console.log('✅ Terms and conditions response:', response);
 
             if (response && typeof response === 'object') {
@@ -398,7 +430,45 @@ export default function SignatureConfirmation() {
         setNotificationDialogOpen(false);
     };
 
+    // Handle load personal Notification
+    const loadPersonalNotification = async () => {
+        setIsLoadingPersonalNotification(true);
+        setPersonalNotificationDialogOpen(true);
+        try {
+            console.log('🔄 Fetching personal notification for language:', selectedLanguage);
+            let request = {
+                Lang: selectedLanguage,
+                PatronId: currentSignatureData?.patronId || 0,
+                SignatureDataUrl: canvasSignature || ''
+            };
+            const response = await signatureApiService.getPersonalNotification(request);
+            console.log('✅ Personal notification response:', response);
 
+            if (response && typeof response === 'object') {
+                const personalNotificationData = (response as any).data || (response as any).htmlContent || (response as any).content;
+                if (personalNotificationData) {
+                    setPersonalNotificationContent(personalNotificationData);
+                } else {
+                    console.warn('⚠️ No personal notification content in response:', response);
+                    setPersonalNotificationContent('<p>Personal notification not available</p>');
+                }
+            } else {
+                console.warn('⚠️ Invalid personal notification response format:', response);
+                setPersonalNotificationContent('<p>Personal notification not available</p>');
+            }
+        } catch (error) {
+            console.error('❌ Failed to fetch personal notification:', error);
+            setPersonalNotificationContent('<p>Failed to load personal notification</p>');
+        } finally {
+            setIsLoadingPersonalNotification(false);
+        }
+    };
+
+    // Handle agree to notification on personal data protection
+    const handleAgreeToPersonalNotification = () => {
+        setHasAgreedToPersonalNotification(true);
+        setPersonalNotificationDialogOpen(false);
+    };
 
     const formatTimeLeft = (seconds: number): string => {
         const mins = Math.floor(seconds / 60);
@@ -1287,70 +1357,141 @@ export default function SignatureConfirmation() {
                                         </Box>
 
                                         {/* Notification and Conditions Checkbox */}
-                                        <Box sx={{
-                                            px: isMobile ? 1 : 2,
-                                            pt: isMobile ? 1 : 1.5,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            bgcolor: '#ffffff',
-                                            boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
-                                        }}>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={hasAgreedToNotification}
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                loadNotification();
-                                                            } else {
-                                                                setHasAgreedToNotification(false);
-                                                            }
-                                                        }}
-                                                        sx={{
-                                                            color: '#274549',
-                                                            '&.Mui-checked': {
-                                                                color: '#274549'
-                                                            }
-                                                        }}
-                                                    />
-                                                }
-                                                label={
-                                                    <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                                        {t("IAgreeToTheNotificationOnPersonalDataProtection")} {' '}
-                                                        <Button
-                                                            onClick={() => loadNotification()}
-                                                            sx={{
-                                                                textTransform: 'none',
-                                                                p: 0,
-                                                                minWidth: 'auto',
-                                                                color: '#274549',
-                                                                textDecoration: 'underline',
-                                                                fontSize: isMobile ? '0.8rem' : '1rem',
-                                                                '&:hover': {
-                                                                    bgcolor: 'transparent',
-                                                                    textDecoration: 'underline'
+                                        {currentPatronNationality !== "704" && (
+                                            <Box sx={{
+                                                px: isMobile ? 1 : 2,
+                                                pt: isMobile ? 1 : 1.5,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                bgcolor: '#ffffff',
+                                                boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
+                                            }}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={hasAgreedToNotification}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    loadNotification();
+                                                                } else {
+                                                                    setHasAgreedToNotification(false);
                                                                 }
                                                             }}
-                                                        >
-                                                        </Button>
+                                                            sx={{
+                                                                color: '#274549',
+                                                                '&.Mui-checked': {
+                                                                    color: '#274549'
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
+                                                            {t("IAgreeToTheNotificationOnPersonalDataProtection")} {' '}
+                                                            <Button
+                                                                onClick={() => loadNotification()}
+                                                                sx={{
+                                                                    textTransform: 'none',
+                                                                    p: 0,
+                                                                    minWidth: 'auto',
+                                                                    color: '#274549',
+                                                                    textDecoration: 'underline',
+                                                                    fontSize: isMobile ? '0.8rem' : '1rem',
+                                                                    '&:hover': {
+                                                                        bgcolor: 'transparent',
+                                                                        textDecoration: 'underline'
+                                                                    }
+                                                                }}
+                                                            >
+                                                            </Button>
+                                                        </Typography>
+                                                    }
+                                                />
+                                                {canvasSignature && !hasAgreedToNotification && (
+                                                    <Typography
+                                                        variant={isMobile ? 'caption' : 'body2'}
+                                                        sx={{
+                                                            color: 'error.main',
+                                                            mt: 0.5,
+                                                            fontWeight: 550,
+                                                            textAlign: 'center'
+                                                        }}
+                                                    >
+                                                        {t("PleaseReadNotificationOnPersonalDataProtectionBeforeSubmitting")}
                                                     </Typography>
-                                                }
-                                            />
-                                            {canvasSignature && !hasAgreedToNotification && (
-                                                <Typography
-                                                    variant={isMobile ? 'caption' : 'body2'}
-                                                    sx={{
-                                                        color: 'error.main',
-                                                        mt: 0.5,
-                                                        fontWeight: 550,
-                                                        textAlign: 'center'
-                                                    }}
-                                                >
-                                                    {t("PleaseReadNotificationOnPersonalDataProtectionBeforeSubmitting")}
-                                                </Typography>
-                                            )}
-                                        </Box>
+                                                )}
+                                            </Box>
+                                        )}
+
+                                        {/* Personal Notification and Conditions Checkbox */}
+                                        {currentPatronNationality === "704" && (
+                                            <Box sx={{
+                                                px: isMobile ? 1 : 2,
+                                                pt: isMobile ? 1 : 1.5,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                bgcolor: '#ffffff',
+                                                boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
+                                            }}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={hasAgreedToPersonalNotification}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    loadPersonalNotification();
+                                                                } else {
+                                                                    setHasAgreedToPersonalNotification(false);
+                                                                }
+                                                            }}
+                                                            sx={{
+                                                                color: '#274549',
+                                                                '&.Mui-checked': {
+                                                                    color: '#274549'
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
+                                                            {t("IAgreeToThePersonalNotification")} {' '}
+                                                            <Button
+                                                                onClick={() => loadPersonalNotification()}
+                                                                sx={{
+                                                                    textTransform: 'none',
+                                                                    p: 0,
+                                                                    minWidth: 'auto',
+                                                                    color: '#274549',
+                                                                    textDecoration: 'underline',
+                                                                    fontSize: isMobile ? '0.8rem' : '1rem',
+                                                                    '&:hover': {
+                                                                        bgcolor: 'transparent',
+                                                                        textDecoration: 'underline'
+                                                                    }
+                                                                }}
+                                                            >
+                                                            </Button>
+                                                        </Typography>
+                                                    }
+                                                />
+                                                {canvasSignature && !hasAgreedToPersonalNotification && (
+                                                    <Typography
+                                                        variant={isMobile ? 'caption' : 'body2'}
+                                                        sx={{
+                                                            color: 'error.main',
+                                                            mt: 0.5,
+                                                            fontWeight: 550,
+                                                            textAlign: 'center'
+                                                        }}
+                                                    >
+                                                        {t("PleaseReadPersonalNotificationBeforeSubmitting")}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                        )}
+
 
                                         {/* Actions when signature panel is shown */}
                                         <Box sx={{
@@ -1401,7 +1542,9 @@ export default function SignatureConfirmation() {
                                             </Button>
                                             <Button
                                                 onClick={handleSubmitCanvasSignature}
-                                                disabled={isSubmittingSignature || !canvasSignature || isExpired || !hasAgreedToTerms || !hasAgreedToNotification}
+                                                disabled={isSubmittingSignature || !canvasSignature || isExpired || !hasAgreedToTerms ||
+                                                    (!hasAgreedToNotification && currentPatronNationality !== "704") ||
+                                                    (!hasAgreedToPersonalNotification && currentPatronNationality === "704")}
                                                 startIcon={isMobile ? null : <Send />}
                                                 variant="contained"
                                                 size={isMobile ? 'small' : 'medium'}
@@ -1665,6 +1808,132 @@ export default function SignatureConfirmation() {
                             onClick={handleAgreeToNotification}
                             variant="contained"
                             disabled={isLoadingNotification}
+                            startIcon={<CheckCircle />}
+                            sx={{
+                                backgroundColor: '#274549',
+                                '&:hover': {
+                                    backgroundColor: '#1a3033'
+                                }
+                            }}
+                        >
+                            {t("AgreeAndContinue")}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Personal Notification Dialog */}
+                <Dialog
+                    open={personalNotificationDialogOpen}
+                    onClose={() => setPersonalNotificationDialogOpen(false)}
+                    maxWidth="md"
+                    fullWidth
+                    fullScreen={isMobile}
+                    PaperProps={{
+                        sx: {
+                            height: isMobile ? '95vh' : '80vh',
+                            maxHeight: isMobile ? '95vh' : '80vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            m: isMobile ? 0 : 2
+                        }
+                    }}
+                >
+                    <DialogTitle sx={{
+                        pb: 1,
+                        flexShrink: 0,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        bgcolor: '#274549',
+                        color: 'white'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Description />
+                            <Typography variant="h6">{t("PersonalNotification")}</Typography>
+                        </Box>
+                        <Button
+                            onClick={() => setPersonalNotificationDialogOpen(false)}
+                            sx={{
+                                minWidth: 'auto',
+                                p: 1,
+                                color: 'white',
+                                '&:hover': {
+                                    bgcolor: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            }}
+                        >
+                            <Close />
+                        </Button>
+                    </DialogTitle>
+
+                    <DialogContent sx={{
+                        pt: 2,
+                        pb: 2,
+                        flex: 1,
+                        overflow: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        {isLoadingTerms ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                                <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+                                    {t("LoadingTermsAndConditions")}
+                                </Typography>
+                                <LinearProgress sx={{ width: '60%' }} />
+                            </Box>
+                        ) : (
+                            <Box
+                                sx={{
+                                    wordSpacing: '0.15em',
+                                    p: 3,
+                                    border: '1px solid #e0e0e0',
+                                    borderRadius: 2,
+                                    bgcolor: 'background.paper',
+                                    '& img': {
+                                        maxWidth: '100%',
+                                        height: 'auto'
+                                    },
+                                    '& table': {
+                                        width: '100%',
+                                        borderCollapse: 'collapse'
+                                    },
+                                    '& td, & th': {
+                                        padding: '12px',
+                                        border: '1px solid #e0e0e0'
+                                    },
+                                    '& th': {
+                                        bgcolor: '#f5f5f5',
+                                        fontWeight: 'bold'
+                                    }
+                                }}
+                                dangerouslySetInnerHTML={{ __html: personalNotificationContent }}
+                            />
+                        )}
+                    </DialogContent>
+
+                    <DialogActions sx={{
+                        p: 2,
+                        borderTop: '1px solid #e0e0e0',
+                        bgcolor: '#f9f9f9'
+                    }}>
+                        <Button
+                            onClick={() => setPersonalNotificationDialogOpen(false)}
+                            variant="outlined"
+                            sx={{
+                                border: '1px solid #274549',
+                                color: '#274549',
+                                '&:hover': {
+                                    border: '1px solid #1a3033',
+                                    bgcolor: 'rgba(39, 69, 73, 0.05)'
+                                }
+                            }}
+                        >
+                            {t("Cancel")}
+                        </Button>
+                        <Button
+                            onClick={handleAgreeToPersonalNotification}
+                            variant="contained"
+                            disabled={isLoadingPersonalNotification}
                             startIcon={<CheckCircle />}
                             sx={{
                                 backgroundColor: '#274549',

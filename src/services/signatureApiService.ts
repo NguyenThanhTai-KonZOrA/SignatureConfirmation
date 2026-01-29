@@ -143,12 +143,32 @@ export const signatureApiService = {
         }
     },
 
+    getTermsAndConditionsV2: async (request: GetNotificationRequest): Promise<GetNotificationResponse> => {
+        try {
+            const response = await api.post(`/api/Documents/getTerms/`, request);
+            return unwrapApiEnvelope(response);
+        } catch (error) {
+            console.error('Error fetching notification:', error);
+            throw error;
+        }
+    },
+
     getNotification: async (request: GetNotificationRequest): Promise<GetNotificationResponse> => {
         try {
             const response = await api.post(`/api/Documents/getNotification/`, request);
             return unwrapApiEnvelope(response);
         } catch (error) {
             console.error('Error fetching notification:', error);
+            throw error;
+        }
+    },
+
+    getPersonalNotification: async (request: GetNotificationRequest): Promise<GetNotificationResponse> => {
+        try {
+            const response = await api.post(`/api/Documents/getPersonalNotification/`, request);
+            return unwrapApiEnvelope(response);
+        } catch (error) {
+            console.error('Error fetching personal notification:', error);
             throw error;
         }
     },

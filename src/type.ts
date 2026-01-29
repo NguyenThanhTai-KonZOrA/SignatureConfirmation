@@ -117,6 +117,7 @@ export class PatronDataReceived {
     idType?: string;
     birthday?: string;
     address?: string;
+    nationality?: string;
 }
 
 export interface SignatureConfirmRequest {
