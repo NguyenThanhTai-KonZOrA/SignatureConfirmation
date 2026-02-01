@@ -487,6 +487,16 @@ export default function SignatureConfirmation() {
             return;
         }
 
+        // Check if first form is signed
+        const hasSignedFirstForm = currentPatronNationality === "704" 
+            ? hasAgreedToPersonalNotification 
+            : hasAgreedToNotification;
+
+        if (!hasSignedFirstForm) {
+            setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
+            return;
+        }
+
         if (!hasAgreedToTerms) {
             setSignatureError('Please read and agree to the Terms and Conditions');
             return;
@@ -1076,494 +1086,299 @@ export default function SignatureConfirmation() {
                                     WebkitOverflowScrolling: 'touch',
                                     position: 'relative'
                                 }}>
-                                    {htmlContent ? (
-                                        <Box
-                                            sx={{
-                                                p: 3,
-                                                border: '1px solid #e0e0e0',
-                                                borderRadius: 2,
-                                                bgcolor: 'background.paper',
-                                                '& img': {
-                                                    maxWidth: '100%',
-                                                    height: 'auto'
-                                                },
-                                                '& table': {
-                                                    width: '100%',
-                                                    borderCollapse: 'collapse'
-                                                },
-                                                '& td, & th': {
-                                                    padding: '12px',
-                                                    border: '1px solid #e0e0e0'
-                                                },
-                                                '& th': {
-                                                    bgcolor: '#f5f5f5',
-                                                    fontWeight: 'bold'
+                    {htmlContent ? (
+                        <Box
+                            sx={{
+                                p: 3,
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 2,
+                                bgcolor: 'background.paper',
+                                '& img': {
+                                    maxWidth: '100%',
+                                    height: 'auto'
+                                },
+                                '& table': {
+                                    width: '100%',
+                                    borderCollapse: 'collapse'
+                                },
+                                '& td, & th': {
+                                    padding: '12px',
+                                    border: '1px solid #e0e0e0'
+                                },
+                                '& th': {
+                                    bgcolor: '#f5f5f5',
+                                    fontWeight: 'bold'
+                                }
+                            }}
+                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        />
+                    ) : (
+                        <Alert severity="warning" sx={{ fontSize: '1.1rem' }}>
+                            {t("NoReviewContentAvailable")}
+                        </Alert>
+                    )}
+
+                    {/* Checkboxes Section - Placed after HTML Content */}
+                    <Box sx={{ 
+                        mt: 3, 
+                        p: 3, 
+                        border: '2px solid #274549', 
+                        borderRadius: 2, 
+                        bgcolor: '#f9f9f9',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2
+                    }}>
+                        <Typography variant="h6" sx={{ color: '#274549', fontWeight: 600, mb: 1 }}>
+                            {t("RequiredAgreements")}
+                        </Typography>
+
+                        {/* 1. Personal Notification Checkbox - For Vietnamese */}
+                        {currentPatronNationality === "704" && (
+                            <Box sx={{
+                                p: 2,
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 1,
+                                bgcolor: hasAgreedToPersonalNotification ? '#e8f5e9' : 'white'
+                            }}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={hasAgreedToPersonalNotification}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    loadPersonalNotification();
+                                                } else {
+                                                    setHasAgreedToPersonalNotification(false);
                                                 }
                                             }}
-                                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                                            sx={{
+                                                color: '#274549',
+                                                '&.Mui-checked': {
+                                                    color: '#4caf50'
+                                                }
+                                            }}
                                         />
-                                    ) : (
-                                        <Alert severity="warning" sx={{ fontSize: '1.1rem' }}>
-                                            {t("NoReviewContentAvailable")}
-                                        </Alert>
-                                    )}
-
-                                    {/* Fixed Sign Button - Bottom Right Corner with hover expand */}
-                                    {!showSignaturePanel && (
-                                        <Button
-                                            onClick={() => setShowSignaturePanel(true)}
-                                            disabled={isExpired}
-                                            variant="contained"
-                                            size="large"
-                                            startIcon={<Edit />}
-                                            sx={{
-                                                position: 'sticky',
-                                                bottom: 16,
-                                                right: 16,
-                                                float: 'right',
-                                                mt: 2,
-                                                mb: 2,
-                                                backgroundColor: '#274549',
-                                                boxShadow: '0 4px 12px rgba(39, 69, 73, 0.3)',
-                                                minWidth: 56,
-                                                width: 56,
-                                                transition: 'width 0.3s cubic-bezier(.4,0,.2,1)',
-                                                overflow: 'hidden',
-                                                '& .MuiButton-startIcon': {
-                                                    margin: 0
-                                                },
-                                                '& .sign-label': {
-                                                    opacity: 0,
-                                                    width: 0,
-                                                    transition: 'opacity 0.2s, width 0.3s',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden'
-                                                },
-                                                '&:hover': {
-                                                    backgroundColor: '#1a3033',
-                                                    boxShadow: '0 6px 16px rgba(39, 69, 73, 0.4)',
-                                                    width: 140,
-                                                    '& .sign-label': {
-                                                        opacity: 1,
-                                                        width: 'auto',
-                                                        marginLeft: '8px'
-                                                    }
-                                                },
-                                                zIndex: 10
-                                            }}
-                                        >
-                                            <span className="sign-label">{t("Sign")}</span>
-                                        </Button>
-                                    )}
-
-                                    {/* Show applied signature in review form */}
-                                    {canvasSignature && !showSignaturePanel && (
-                                        <Box sx={{ mt: 3, p: 2, border: '2px solid #274549', borderRadius: 2, bgcolor: '#f9f9f9' }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                                <Typography variant="body1" sx={{ color: '#274549', fontWeight: 'bold' }}>{t("YourSignature")}:</Typography>
-                                                <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: 1, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                                                    <img src={canvasSignature} alt={t("SignaturePreview")} style={{ height: 60, maxWidth: 300, display: 'block' }} />
-                                                </Box>
-                                                <Button
-                                                    onClick={() => {
-                                                        setCanvasSignature(null);
-                                                        setSignatureError(null);
-                                                        setShowSignaturePanel(true);
-                                                    }}
-                                                    variant="outlined"
-                                                    size="small"
-                                                    sx={{ color: '#274549', border: '1px solid #274549' }}
-                                                >
-                                                    {t("Undo")}
-                                                </Button>
-                                            </Box>
-                                        </Box>
-                                    )}
-                                </Box>
-
-                                {/* Signature Panel - Only show when Sign button clicked */}
-                                {showSignaturePanel && (
-                                    <Box
-                                        className="signature-panel"
-                                        sx={{
-                                            flexShrink: 0,
-                                            borderTop: '2px solid #274549',
-                                            pt: isMobile ? 0.5 : 1,
-                                            pb: 0,
-                                            bgcolor: '#f9f9f9',
-                                            minHeight: isMobile ? 'auto' : isTablet ? 250 : 300,
-                                            maxHeight: isMobile ? '45vh' : isTablet ? '40vh' : '45vh',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            position: 'relative',
-                                            bottom: '10%',
-                                            animation: 'slideUp 0.4s ease-out',
-                                            '@keyframes slideUp': {
-                                                '0%': {
-                                                    transform: 'translateY(100%)',
-                                                    opacity: 0
-                                                },
-                                                '100%': {
-                                                    transform: 'translateY(-10%)',
-                                                    opacity: 1
-                                                }
-                                            },
-                                            '@keyframes slideDown': {
-                                                '0%': {
-                                                    transform: 'translateY(-10%)',
-                                                    opacity: 1
-                                                },
-                                                '100%': {
-                                                    transform: 'translateY(100%)',
-                                                    opacity: 0
-                                                }
-                                            }
-                                        }}
-                                    >
-                                        {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: isMobile ? 0.5 : 1, px: isMobile ? 1 : 2, py: 0.5 }}>
-                                            <Typography variant="body2" sx={{ color: '#274549', fontSize: isMobile ? '0.75rem' : '0.9rem' }}>
-                                                ✍️ {isMobile ? 'Sign below' : 'Please provide your signature below'}
+                                    }
+                                    label={
+                                        <Box>
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                {t("IAgreeToThePersonalNotification")}
                                             </Typography>
                                             <Button
-                                                onClick={() => {
-                                                    // Add slide-down animation before closing
-                                                    const panel = document.querySelector('.signature-panel') as HTMLElement;
-                                                    if (panel) {
-                                                        panel.style.animation = 'slideDown 0.3s ease-in';
-                                                        setTimeout(() => {
-                                                            setShowSignaturePanel(false);
-                                                            setCanvasSignature(null);
-                                                            setSignatureError(null);
-                                                        }, 250);
-                                                    } else {
-                                                        setShowSignaturePanel(false);
-                                                        setCanvasSignature(null);
-                                                        setSignatureError(null);
-                                                    }
-                                                }}
-                                                size="small"
-                                                sx={{ color: '#274549', fontSize: isMobile ? '0.7rem' : '0.8rem', minWidth: 'auto', p: 0.5 }}
-                                            >
-                                                {isMobile ? 'Back' : 'Back to Review'}
-                                            </Button>
-                                        </Box> */}
-
-                                        <Box sx={{ px: isMobile ? 0.5 : 2, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                            <Box sx={{ flex: 0, mb: isMobile ? 0.5 : 1 }}>
-                                                <SignatureCanvas
-                                                    width={isMobile ? 340 : isTablet ? 500 : 700}
-                                                    height={isMobile ? 120 : isTablet ? 140 : 180}
-                                                    onSignatureChange={handleCanvasSignatureChange}
-                                                    disabled={isSubmittingSignature || isExpired}
-                                                />
-                                            </Box>
-
-                                            {/* Show signature preview and Undo in panel */}
-                                            {/* {canvasSignature && (
-                                                <Box sx={{ mt: isMobile ? 0.5 : 1, p: isMobile ? 0.75 : 1.5, border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1, flexWrap: 'wrap', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
-                                                        <Typography variant="caption" sx={{ color: '#274549', fontWeight: 'bold', fontSize: isMobile ? '0.7rem' : '0.75rem' }}>Preview:</Typography>
-                                                        <Box sx={{ border: '1px solid #274549', borderRadius: 1, bgcolor: '#fff', p: isMobile ? 0.25 : 0.5 }}>
-                                                            <img src={canvasSignature} alt="Signature Preview" style={{ height: isMobile ? 30 : 40, maxWidth: isMobile ? 150 : 200, display: 'block' }} />
-                                                        </Box>
-                                                        <Button
-                                                            onClick={() => {
-                                                                setCanvasSignature(null);
-                                                                setSignatureError(null);
-                                                            }}
-                                                            variant="outlined"
-                                                            size="small"
-                                                            sx={{ color: '#274549', border: '1px solid #274549', minHeight: isMobile ? 28 : 32, fontSize: isMobile ? '0.65rem' : '0.75rem', px: isMobile ? 1 : 1.5 }}
-                                                        >
-                                                            Undo
-                                                        </Button>
-                                                    </Box>
-                                                </Box>
-                                            )} */}
-                                        </Box>
-
-                                        {/* Error Message */}
-                                        {signatureError && (
-                                            <Alert severity="error" sx={{ mt: isMobile ? 0.5 : 1, mx: isMobile ? 0.5 : 2, py: isMobile ? 0.25 : 0.5 }}>
-                                                <Typography variant="caption" sx={{ fontSize: isMobile ? '0.7rem' : '0.75rem' }}>{signatureError}</Typography>
-                                            </Alert>
-                                        )}
-
-                                        {/* Terms and Conditions Checkbox */}
-                                        <Box sx={{
-                                            px: isMobile ? 1 : 2,
-                                            pt: isMobile ? 1 : 1.5,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            borderTop: '1px solid #e0e0e0',
-                                            bgcolor: '#ffffff',
-                                            boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
-                                        }}>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={hasAgreedToTerms}
-                                                        onChange={(e) => {
-                                                            if (e.target.checked) {
-                                                                loadTermsAndConditions();
-                                                            } else {
-                                                                setHasAgreedToTerms(false);
-                                                            }
-                                                        }}
-                                                        sx={{
-                                                            color: '#274549',
-                                                            '&.Mui-checked': {
-                                                                color: '#274549'
-                                                            }
-                                                        }}
-                                                    />
-                                                }
-                                                label={
-                                                    <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                                        {t("IAgreeToTheTermsAndConditions")} {' '}
-                                                        <Button
-                                                            onClick={() => loadTermsAndConditions()}
-                                                            sx={{
-                                                                textTransform: 'none',
-                                                                p: 0,
-                                                                minWidth: 'auto',
-                                                                color: '#274549',
-                                                                textDecoration: 'underline',
-                                                                fontSize: isMobile ? '0.8rem' : '1rem',
-                                                                '&:hover': {
-                                                                    bgcolor: 'transparent',
-                                                                    textDecoration: 'underline'
-                                                                }
-                                                            }}
-                                                        >
-                                                        </Button>
-                                                    </Typography>
-                                                }
-                                            />
-                                            {canvasSignature && !hasAgreedToTerms && (
-                                                <Typography
-                                                    variant={isMobile ? 'caption' : 'body2'}
-                                                    sx={{
-                                                        color: 'error.main',
-                                                        mt: 0.5,
-                                                        fontWeight: 550,
-                                                        textAlign: 'center'
-                                                    }}
-                                                >
-                                                    {t("PleaseReadTermsAndConditionsBeforeSubmitting")}
-                                                </Typography>
-                                            )}
-                                        </Box>
-
-                                        {/* Notification and Conditions Checkbox */}
-                                        {currentPatronNationality !== "704" && (
-                                            <Box sx={{
-                                                px: isMobile ? 1 : 2,
-                                                pt: isMobile ? 1 : 1.5,
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                bgcolor: '#ffffff',
-                                                boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
-                                            }}>
-                                                <FormControlLabel
-                                                    control={
-                                                        <Checkbox
-                                                            checked={hasAgreedToNotification}
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    loadNotification();
-                                                                } else {
-                                                                    setHasAgreedToNotification(false);
-                                                                }
-                                                            }}
-                                                            sx={{
-                                                                color: '#274549',
-                                                                '&.Mui-checked': {
-                                                                    color: '#274549'
-                                                                }
-                                                            }}
-                                                        />
-                                                    }
-                                                    label={
-                                                        <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                                            {t("IAgreeToTheNotificationOnPersonalDataProtection")} {' '}
-                                                            <Button
-                                                                onClick={() => loadNotification()}
-                                                                sx={{
-                                                                    textTransform: 'none',
-                                                                    p: 0,
-                                                                    minWidth: 'auto',
-                                                                    color: '#274549',
-                                                                    textDecoration: 'underline',
-                                                                    fontSize: isMobile ? '0.8rem' : '1rem',
-                                                                    '&:hover': {
-                                                                        bgcolor: 'transparent',
-                                                                        textDecoration: 'underline'
-                                                                    }
-                                                                }}
-                                                            >
-                                                            </Button>
-                                                        </Typography>
-                                                    }
-                                                />
-                                                {canvasSignature && !hasAgreedToNotification && (
-                                                    <Typography
-                                                        variant={isMobile ? 'caption' : 'body2'}
-                                                        sx={{
-                                                            color: 'error.main',
-                                                            mt: 0.5,
-                                                            fontWeight: 550,
-                                                            textAlign: 'center'
-                                                        }}
-                                                    >
-                                                        {t("PleaseReadNotificationOnPersonalDataProtectionBeforeSubmitting")}
-                                                    </Typography>
-                                                )}
-                                            </Box>
-                                        )}
-
-                                        {/* Personal Notification and Conditions Checkbox */}
-                                        {currentPatronNationality === "704" && (
-                                            <Box sx={{
-                                                px: isMobile ? 1 : 2,
-                                                pt: isMobile ? 1 : 1.5,
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                bgcolor: '#ffffff',
-                                                boxShadow: '0 -2px 8px rgba(0,0,0,0.05)'
-                                            }}>
-                                                <FormControlLabel
-                                                    control={
-                                                        <Checkbox
-                                                            checked={hasAgreedToPersonalNotification}
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    loadPersonalNotification();
-                                                                } else {
-                                                                    setHasAgreedToPersonalNotification(false);
-                                                                }
-                                                            }}
-                                                            sx={{
-                                                                color: '#274549',
-                                                                '&.Mui-checked': {
-                                                                    color: '#274549'
-                                                                }
-                                                            }}
-                                                        />
-                                                    }
-                                                    label={
-                                                        <Typography variant="body1" sx={{ fontSize: isMobile ? '0.8rem' : '1rem' }}>
-                                                            {t("IAgreeToThePersonalNotification")} {' '}
-                                                            <Button
-                                                                onClick={() => loadPersonalNotification()}
-                                                                sx={{
-                                                                    textTransform: 'none',
-                                                                    p: 0,
-                                                                    minWidth: 'auto',
-                                                                    color: '#274549',
-                                                                    textDecoration: 'underline',
-                                                                    fontSize: isMobile ? '0.8rem' : '1rem',
-                                                                    '&:hover': {
-                                                                        bgcolor: 'transparent',
-                                                                        textDecoration: 'underline'
-                                                                    }
-                                                                }}
-                                                            >
-                                                            </Button>
-                                                        </Typography>
-                                                    }
-                                                />
-                                                {canvasSignature && !hasAgreedToPersonalNotification && (
-                                                    <Typography
-                                                        variant={isMobile ? 'caption' : 'body2'}
-                                                        sx={{
-                                                            color: 'error.main',
-                                                            mt: 0.5,
-                                                            fontWeight: 550,
-                                                            textAlign: 'center'
-                                                        }}
-                                                    >
-                                                        {t("PleaseReadPersonalNotificationBeforeSubmitting")}
-                                                    </Typography>
-                                                )}
-                                            </Box>
-                                        )}
-
-
-                                        {/* Actions when signature panel is shown */}
-                                        <Box sx={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            gap: isMobile ? 1 : 1.5,
-                                            mt: 'auto',
-                                            pt: isMobile ? 1 : 1.5,
-                                            pb: isMobile ? 1 : 1.5,
-                                            flexDirection: 'row',
-                                            px: isMobile ? 1 : 2,
-                                            flexWrap: 'nowrap',
-                                            borderTop: '1px solid #e0e0e0',
-                                            bgcolor: '#ffffff',
-                                            boxShadow: '0 -2px 8px rgba(0,0,0,0.05)',
-                                            position: 'sticky',
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            zIndex: 10
-                                        }}>
-                                            <Button
-                                                onClick={() => {
-                                                    // Add slide-down animation before closing
-                                                    const panel = document.querySelector('.signature-panel') as HTMLElement;
-                                                    if (panel) {
-                                                        panel.style.animation = 'slideDown 0.3s ease-in';
-                                                        setTimeout(() => {
-                                                            setShowSignaturePanel(false);
-                                                        }, 250);
-                                                    } else {
-                                                        setShowSignaturePanel(false);
-                                                    }
-                                                }}
-                                                disabled={isSubmittingSignature}
-                                                variant="outlined"
-                                                size={isMobile ? 'small' : 'medium'}
+                                                onClick={() => loadPersonalNotification()}
                                                 sx={{
-                                                    minWidth: isMobile ? 100 : isTablet ? 120 : 140,
-                                                    flex: isMobile || isTablet ? 1.5 : 'none',
-                                                    border: '1px solid #274549',
+                                                    textTransform: 'none',
+                                                    p: 0,
+                                                    minWidth: 'auto',
                                                     color: '#274549',
-                                                    fontSize: isMobile ? '0.8rem' : '1rem',
-                                                    height: isMobile ? 36 : 40
-                                                }}
-                                            >
-                                                {t("Back")}
-                                            </Button>
-                                            <Button
-                                                onClick={handleSubmitCanvasSignature}
-                                                disabled={isSubmittingSignature || !canvasSignature || isExpired || !hasAgreedToTerms ||
-                                                    (!hasAgreedToNotification && currentPatronNationality !== "704") ||
-                                                    (!hasAgreedToPersonalNotification && currentPatronNationality === "704")}
-                                                startIcon={isMobile ? null : <Send />}
-                                                variant="contained"
-                                                size={isMobile ? 'small' : 'medium'}
-                                                sx={{
-                                                    minWidth: isMobile ? 100 : isTablet ? 120 : 140,
-                                                    flex: isMobile || isTablet ? 1.5 : 'none',
-                                                    backgroundColor: '#274549',
-                                                    fontSize: isMobile ? '0.8rem' : '1rem',
-                                                    height: isMobile ? 36 : 40,
+                                                    textDecoration: 'underline',
+                                                    fontSize: '0.9rem',
                                                     '&:hover': {
-                                                        backgroundColor: '#1a3033'
+                                                        bgcolor: 'transparent',
+                                                        textDecoration: 'underline'
                                                     }
                                                 }}
                                             >
-                                                {isSubmittingSignature ? (isMobile ? t("Sending") : t("Submitting")) : (isMobile ? t("SubmitSignature") : t("SubmitSignature"))}
+                                                ({t("ViewDocument")})
                                             </Button>
                                         </Box>
+                                    }
+                                />
+                            </Box>
+                        )}
+
+                        {/* 2. Notification Checkbox - For Non-Vietnamese */}
+                        {currentPatronNationality !== "704" && (
+                            <Box sx={{
+                                p: 2,
+                                border: '1px solid #e0e0e0',
+                                borderRadius: 1,
+                                bgcolor: hasAgreedToNotification ? '#e8f5e9' : 'white'
+                            }}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={hasAgreedToNotification}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    loadNotification();
+                                                } else {
+                                                    setHasAgreedToNotification(false);
+                                                }
+                                            }}
+                                            sx={{
+                                                color: '#274549',
+                                                '&.Mui-checked': {
+                                                    color: '#4caf50'
+                                                }
+                                            }}
+                                        />
+                                    }
+                                    label={
+                                        <Box>
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                {t("IAgreeToTheNotificationOnPersonalDataProtection")}
+                                            </Typography>
+                                            <Button
+                                                onClick={() => loadNotification()}
+                                                sx={{
+                                                    textTransform: 'none',
+                                                    p: 0,
+                                                    minWidth: 'auto',
+                                                    color: '#274549',
+                                                    textDecoration: 'underline',
+                                                    fontSize: '0.9rem',
+                                                    '&:hover': {
+                                                        bgcolor: 'transparent',
+                                                        textDecoration: 'underline'
+                                                    }
+                                                }}
+                                            >
+                                                ({t("ViewDocument")})
+                                            </Button>
+                                        </Box>
+                                    }
+                                />
+                            </Box>
+                        )}
+
+                        {/* 3. Terms and Conditions Checkbox */}
+                        <Box sx={{
+                            p: 2,
+                            border: '1px solid #e0e0e0',
+                            borderRadius: 1,
+                            bgcolor: hasAgreedToTerms ? '#e8f5e9' : 'white',
+                            opacity: (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
+                                    (currentPatronNationality !== "704" && !hasAgreedToNotification) ? 0.5 : 1
+                        }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={hasAgreedToTerms}
+                                        onChange={(e) => {
+                                            // Check if first form is signed
+                                            const hasSignedFirstForm = currentPatronNationality === "704" 
+                                                ? hasAgreedToPersonalNotification 
+                                                : hasAgreedToNotification;
+
+                                            if (!hasSignedFirstForm) {
+                                                setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
+                                                return;
+                                            }
+
+                                            if (e.target.checked) {
+                                                loadTermsAndConditions();
+                                            } else {
+                                                setHasAgreedToTerms(false);
+                                            }
+                                        }}
+                                        disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
+                                                (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                        sx={{
+                                            color: '#274549',
+                                            '&.Mui-checked': {
+                                                color: '#4caf50'
+                                            }
+                                        }}
+                                    />
+                                }
+                                label={
+                                    <Box>
+                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            {t("IAgreeToTheTermsAndConditions")}
+                                        </Typography>
+                                        <Button
+                                            onClick={() => {
+                                                const hasSignedFirstForm = currentPatronNationality === "704" 
+                                                    ? hasAgreedToPersonalNotification 
+                                                    : hasAgreedToNotification;
+
+                                                if (!hasSignedFirstForm) {
+                                                    setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
+                                                    return;
+                                                }
+                                                loadTermsAndConditions();
+                                            }}
+                                            disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
+                                                    (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                            sx={{
+                                                textTransform: 'none',
+                                                p: 0,
+                                                minWidth: 'auto',
+                                                color: '#274549',
+                                                textDecoration: 'underline',
+                                                fontSize: '0.9rem',
+                                                '&:hover': {
+                                                    bgcolor: 'transparent',
+                                                    textDecoration: 'underline'
+                                                }
+                                            }}
+                                        >
+                                            ({t("ViewDocument")})
+                                        </Button>
+                                        {((currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
+                                          (currentPatronNationality !== "704" && !hasAgreedToNotification)) && (
+                                            <Typography variant="caption" sx={{ display: 'block', color: 'error.main', mt: 0.5 }}>
+                                                {t("PleaseSignFirstFormBeforeTerms")}
+                                            </Typography>
+                                        )}
                                     </Box>
-                                )}
+                                }
+                            />
+                        </Box>
+                    </Box>
+
+                    {/* Error Display */}
+                    {signatureError && (
+                        <Alert severity="error" sx={{ mt: 2 }}>
+                            {signatureError}
+                        </Alert>
+                    )}
+
+                    {/* Submit Button */}
+                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                        <Button
+                            onClick={handleCloseSignatureDialog}
+                            disabled={isSubmittingSignature}
+                            variant="outlined"
+                            size="large"
+                            sx={{
+                                border: '1px solid #274549',
+                                color: '#274549',
+                                minWidth: 140,
+                                '&:hover': {
+                                    border: '1px solid #1a3033',
+                                    bgcolor: 'rgba(39, 69, 73, 0.05)'
+                                }
+                            }}
+                        >
+                            {t("Cancel")}
+                        </Button>
+                        <Button
+                            onClick={handleSubmitCanvasSignature}
+                            disabled={
+                                isSubmittingSignature || 
+                                !hasAgreedToTerms || 
+                                isExpired ||
+                                (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
+                                (currentPatronNationality !== "704" && !hasAgreedToNotification)
+                            }
+                            variant="contained"
+                            size="large"
+                            startIcon={<Send />}
+                            sx={{
+                                backgroundColor: '#274549',
+                                minWidth: 140,
+                                '&:hover': {
+                                    backgroundColor: '#1a3033'
+                                }
+                            }}
+                        >
+                            {isSubmittingSignature ? t("Submitting") : t("SubmitSignature")}
+                        </Button>
+                    </Box>
+                </Box>
                             </>
                         ) : null}
                     </DialogContent>
@@ -1748,40 +1563,61 @@ export default function SignatureConfirmation() {
                         display: 'flex',
                         flexDirection: 'column'
                     }}>
-                        {isLoadingTerms ? (
+                        {isLoadingNotification ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                                 <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-                                    {t("LoadingTermsAndConditions")}
+                                    {t("LoadingDocument")}
                                 </Typography>
                                 <LinearProgress sx={{ width: '60%' }} />
                             </Box>
                         ) : (
-                            <Box
-                                sx={{
-                                    wordSpacing: '0.15em',
-                                    p: 3,
-                                    border: '1px solid #e0e0e0',
+                            <>
+                                <Box
+                                    sx={{
+                                        wordSpacing: '0.15em',
+                                        p: 3,
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: 2,
+                                        bgcolor: 'background.paper',
+                                        mb: 3,
+                                        '& img': {
+                                            maxWidth: '100%',
+                                            height: 'auto'
+                                        },
+                                        '& table': {
+                                            width: '100%',
+                                            borderCollapse: 'collapse'
+                                        },
+                                        '& td, & th': {
+                                            padding: '12px',
+                                            border: '1px solid #e0e0e0'
+                                        },
+                                        '& th': {
+                                            bgcolor: '#f5f5f5',
+                                            fontWeight: 'bold'
+                                        }
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: notificationContent }}
+                                />
+
+                                {/* Signature Canvas for Notification */}
+                                <Box sx={{
+                                    p: 2,
+                                    border: '2px solid #274549',
                                     borderRadius: 2,
-                                    bgcolor: 'background.paper',
-                                    '& img': {
-                                        maxWidth: '100%',
-                                        height: 'auto'
-                                    },
-                                    '& table': {
-                                        width: '100%',
-                                        borderCollapse: 'collapse'
-                                    },
-                                    '& td, & th': {
-                                        padding: '12px',
-                                        border: '1px solid #e0e0e0'
-                                    },
-                                    '& th': {
-                                        bgcolor: '#f5f5f5',
-                                        fontWeight: 'bold'
-                                    }
-                                }}
-                                dangerouslySetInnerHTML={{ __html: notificationContent }}
-                            />
+                                    bgcolor: '#f9f9f9'
+                                }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#274549', fontWeight: 600 }}>
+                                        ✍️ {t("PleaseSignBelow")}
+                                    </Typography>
+                                    <SignatureCanvas
+                                        width={isMobile ? 340 : 600}
+                                        height={isMobile ? 120 : 180}
+                                        onSignatureChange={handleCanvasSignatureChange}
+                                        disabled={false}
+                                    />
+                                </Box>
+                            </>
                         )}
                     </DialogContent>
 
@@ -1791,7 +1627,10 @@ export default function SignatureConfirmation() {
                         bgcolor: '#f9f9f9'
                     }}>
                         <Button
-                            onClick={() => setNotificationDialogOpen(false)}
+                            onClick={() => {
+                                setNotificationDialogOpen(false);
+                                setCanvasSignature(null);
+                            }}
                             variant="outlined"
                             sx={{
                                 border: '1px solid #274549',
@@ -1807,7 +1646,7 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={handleAgreeToNotification}
                             variant="contained"
-                            disabled={isLoadingNotification}
+                            disabled={isLoadingNotification || !canvasSignature}
                             startIcon={<CheckCircle />}
                             sx={{
                                 backgroundColor: '#274549',
@@ -1816,7 +1655,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            {t("AgreeAndContinue")}
+                            {t("SignAndAgree")}
                         </Button>
                     </DialogActions>
                 </Dialog>
@@ -1874,40 +1713,61 @@ export default function SignatureConfirmation() {
                         display: 'flex',
                         flexDirection: 'column'
                     }}>
-                        {isLoadingTerms ? (
+                        {isLoadingPersonalNotification ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                                 <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-                                    {t("LoadingTermsAndConditions")}
+                                    {t("LoadingDocument")}
                                 </Typography>
                                 <LinearProgress sx={{ width: '60%' }} />
                             </Box>
                         ) : (
-                            <Box
-                                sx={{
-                                    wordSpacing: '0.15em',
-                                    p: 3,
-                                    border: '1px solid #e0e0e0',
+                            <>
+                                <Box
+                                    sx={{
+                                        wordSpacing: '0.15em',
+                                        p: 3,
+                                        border: '1px solid #e0e0e0',
+                                        borderRadius: 2,
+                                        bgcolor: 'background.paper',
+                                        mb: 3,
+                                        '& img': {
+                                            maxWidth: '100%',
+                                            height: 'auto'
+                                        },
+                                        '& table': {
+                                            width: '100%',
+                                            borderCollapse: 'collapse'
+                                        },
+                                        '& td, & th': {
+                                            padding: '12px',
+                                            border: '1px solid #e0e0e0'
+                                        },
+                                        '& th': {
+                                            bgcolor: '#f5f5f5',
+                                            fontWeight: 'bold'
+                                        }
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: personalNotificationContent }}
+                                />
+
+                                {/* Signature Canvas for Personal Notification */}
+                                <Box sx={{
+                                    p: 2,
+                                    border: '2px solid #274549',
                                     borderRadius: 2,
-                                    bgcolor: 'background.paper',
-                                    '& img': {
-                                        maxWidth: '100%',
-                                        height: 'auto'
-                                    },
-                                    '& table': {
-                                        width: '100%',
-                                        borderCollapse: 'collapse'
-                                    },
-                                    '& td, & th': {
-                                        padding: '12px',
-                                        border: '1px solid #e0e0e0'
-                                    },
-                                    '& th': {
-                                        bgcolor: '#f5f5f5',
-                                        fontWeight: 'bold'
-                                    }
-                                }}
-                                dangerouslySetInnerHTML={{ __html: personalNotificationContent }}
-                            />
+                                    bgcolor: '#f9f9f9'
+                                }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#274549', fontWeight: 600 }}>
+                                        ✍️ {t("PleaseSignBelow")}
+                                    </Typography>
+                                    <SignatureCanvas
+                                        width={isMobile ? 340 : 600}
+                                        height={isMobile ? 120 : 180}
+                                        onSignatureChange={handleCanvasSignatureChange}
+                                        disabled={false}
+                                    />
+                                </Box>
+                            </>
                         )}
                     </DialogContent>
 
@@ -1917,7 +1777,10 @@ export default function SignatureConfirmation() {
                         bgcolor: '#f9f9f9'
                     }}>
                         <Button
-                            onClick={() => setPersonalNotificationDialogOpen(false)}
+                            onClick={() => {
+                                setPersonalNotificationDialogOpen(false);
+                                setCanvasSignature(null);
+                            }}
                             variant="outlined"
                             sx={{
                                 border: '1px solid #274549',
@@ -1933,7 +1796,7 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={handleAgreeToPersonalNotification}
                             variant="contained"
-                            disabled={isLoadingPersonalNotification}
+                            disabled={isLoadingPersonalNotification || !canvasSignature}
                             startIcon={<CheckCircle />}
                             sx={{
                                 backgroundColor: '#274549',
@@ -1942,7 +1805,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            {t("AgreeAndContinue")}
+                            {t("SignAndAgree")}
                         </Button>
                     </DialogActions>
                 </Dialog>

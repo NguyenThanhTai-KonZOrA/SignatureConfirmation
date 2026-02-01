@@ -73,5 +73,10 @@
   "FailedToLoadDeviceInformation": "Không thể tải thông tin thiết bị",
   "DeviceMappingError": "Lỗi ánh xạ thiết bị",
   "NoInternetConnection": "Không có kết nối Internet",
-  "PleaseCheckConnection": "Vui lòng kiểm tra kết nối mạng."
+  "PleaseCheckConnection": "Vui lòng kiểm tra kết nối mạng.",
+  "RequiredAgreements": "Các Thỏa Thuận Bắt Buộc",
+  "ViewDocument": "Xem Tài Liệu",
+  "PleaseSignBelow": "Vui lòng ký tên bên dưới",
+  "SignAndAgree": "Ký & Đồng Ý",
+  "PleaseSignFirstFormBeforeTerms": "Vui lòng ký form đầu tiên trước khi đồng ý với Điều khoản và Chính sách"
 }

@@ -73,5 +73,10 @@
   "FailedToLoadDeviceInformation": "Failed to load device information",
   "DeviceMappingError": "Device mapping error",
   "NoInternetConnection": "No Internet Connection",
-  "PleaseCheckConnection": "Please check your network settings."
+  "PleaseCheckConnection": "Please check your network settings.",
+  "RequiredAgreements": "Required Agreements",
+  "ViewDocument": "View Document",
+  "PleaseSignBelow": "Please sign below",
+  "SignAndAgree": "Sign & Agree",
+  "PleaseSignFirstFormBeforeTerms": "Please sign the first form before agreeing to Terms and Conditions"
 }
