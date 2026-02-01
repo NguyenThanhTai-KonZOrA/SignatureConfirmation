@@ -488,8 +488,8 @@ export default function SignatureConfirmation() {
         }
 
         // Check if first form is signed
-        const hasSignedFirstForm = currentPatronNationality === "704" 
-            ? hasAgreedToPersonalNotification 
+        const hasSignedFirstForm = currentPatronNationality === "704"
+            ? hasAgreedToPersonalNotification
             : hasAgreedToNotification;
 
         if (!hasSignedFirstForm) {
@@ -1086,299 +1086,299 @@ export default function SignatureConfirmation() {
                                     WebkitOverflowScrolling: 'touch',
                                     position: 'relative'
                                 }}>
-                    {htmlContent ? (
-                        <Box
-                            sx={{
-                                p: 3,
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 2,
-                                bgcolor: 'background.paper',
-                                '& img': {
-                                    maxWidth: '100%',
-                                    height: 'auto'
-                                },
-                                '& table': {
-                                    width: '100%',
-                                    borderCollapse: 'collapse'
-                                },
-                                '& td, & th': {
-                                    padding: '12px',
-                                    border: '1px solid #e0e0e0'
-                                },
-                                '& th': {
-                                    bgcolor: '#f5f5f5',
-                                    fontWeight: 'bold'
-                                }
-                            }}
-                            dangerouslySetInnerHTML={{ __html: htmlContent }}
-                        />
-                    ) : (
-                        <Alert severity="warning" sx={{ fontSize: '1.1rem' }}>
-                            {t("NoReviewContentAvailable")}
-                        </Alert>
-                    )}
-
-                    {/* Checkboxes Section - Placed after HTML Content */}
-                    <Box sx={{ 
-                        mt: 3, 
-                        p: 3, 
-                        border: '2px solid #274549', 
-                        borderRadius: 2, 
-                        bgcolor: '#f9f9f9',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2
-                    }}>
-                        <Typography variant="h6" sx={{ color: '#274549', fontWeight: 600, mb: 1 }}>
-                            {t("RequiredAgreements")}
-                        </Typography>
-
-                        {/* 1. Personal Notification Checkbox - For Vietnamese */}
-                        {currentPatronNationality === "704" && (
-                            <Box sx={{
-                                p: 2,
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 1,
-                                bgcolor: hasAgreedToPersonalNotification ? '#e8f5e9' : 'white'
-                            }}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={hasAgreedToPersonalNotification}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    loadPersonalNotification();
-                                                } else {
-                                                    setHasAgreedToPersonalNotification(false);
-                                                }
-                                            }}
+                                    {htmlContent ? (
+                                        <Box
                                             sx={{
-                                                color: '#274549',
-                                                '&.Mui-checked': {
-                                                    color: '#4caf50'
+                                                p: 3,
+                                                border: '1px solid #e0e0e0',
+                                                borderRadius: 2,
+                                                bgcolor: 'background.paper',
+                                                '& img': {
+                                                    maxWidth: '100%',
+                                                    height: 'auto'
+                                                },
+                                                '& table': {
+                                                    width: '100%',
+                                                    borderCollapse: 'collapse'
+                                                },
+                                                '& td, & th': {
+                                                    padding: '12px',
+                                                    border: '1px solid #e0e0e0'
+                                                },
+                                                '& th': {
+                                                    bgcolor: '#f5f5f5',
+                                                    fontWeight: 'bold'
                                                 }
                                             }}
+                                            dangerouslySetInnerHTML={{ __html: htmlContent }}
                                         />
-                                    }
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                {t("IAgreeToThePersonalNotification")}
-                                            </Typography>
-                                            <Button
-                                                onClick={() => loadPersonalNotification()}
-                                                sx={{
-                                                    textTransform: 'none',
-                                                    p: 0,
-                                                    minWidth: 'auto',
-                                                    color: '#274549',
-                                                    textDecoration: 'underline',
-                                                    fontSize: '0.9rem',
-                                                    '&:hover': {
-                                                        bgcolor: 'transparent',
-                                                        textDecoration: 'underline'
-                                                    }
-                                                }}
-                                            >
-                                                ({t("ViewDocument")})
-                                            </Button>
-                                        </Box>
-                                    }
-                                />
-                            </Box>
-                        )}
+                                    ) : (
+                                        <Alert severity="warning" sx={{ fontSize: '1.1rem' }}>
+                                            {t("NoReviewContentAvailable")}
+                                        </Alert>
+                                    )}
 
-                        {/* 2. Notification Checkbox - For Non-Vietnamese */}
-                        {currentPatronNationality !== "704" && (
-                            <Box sx={{
-                                p: 2,
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 1,
-                                bgcolor: hasAgreedToNotification ? '#e8f5e9' : 'white'
-                            }}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={hasAgreedToNotification}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    loadNotification();
-                                                } else {
-                                                    setHasAgreedToNotification(false);
-                                                }
-                                            }}
-                                            sx={{
-                                                color: '#274549',
-                                                '&.Mui-checked': {
-                                                    color: '#4caf50'
-                                                }
-                                            }}
-                                        />
-                                    }
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                {t("IAgreeToTheNotificationOnPersonalDataProtection")}
-                                            </Typography>
-                                            <Button
-                                                onClick={() => loadNotification()}
-                                                sx={{
-                                                    textTransform: 'none',
-                                                    p: 0,
-                                                    minWidth: 'auto',
-                                                    color: '#274549',
-                                                    textDecoration: 'underline',
-                                                    fontSize: '0.9rem',
-                                                    '&:hover': {
-                                                        bgcolor: 'transparent',
-                                                        textDecoration: 'underline'
-                                                    }
-                                                }}
-                                            >
-                                                ({t("ViewDocument")})
-                                            </Button>
-                                        </Box>
-                                    }
-                                />
-                            </Box>
-                        )}
-
-                        {/* 3. Terms and Conditions Checkbox */}
-                        <Box sx={{
-                            p: 2,
-                            border: '1px solid #e0e0e0',
-                            borderRadius: 1,
-                            bgcolor: hasAgreedToTerms ? '#e8f5e9' : 'white',
-                            opacity: (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
-                                    (currentPatronNationality !== "704" && !hasAgreedToNotification) ? 0.5 : 1
-                        }}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={hasAgreedToTerms}
-                                        onChange={(e) => {
-                                            // Check if first form is signed
-                                            const hasSignedFirstForm = currentPatronNationality === "704" 
-                                                ? hasAgreedToPersonalNotification 
-                                                : hasAgreedToNotification;
-
-                                            if (!hasSignedFirstForm) {
-                                                setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
-                                                return;
-                                            }
-
-                                            if (e.target.checked) {
-                                                loadTermsAndConditions();
-                                            } else {
-                                                setHasAgreedToTerms(false);
-                                            }
-                                        }}
-                                        disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
-                                                (currentPatronNationality !== "704" && !hasAgreedToNotification)}
-                                        sx={{
-                                            color: '#274549',
-                                            '&.Mui-checked': {
-                                                color: '#4caf50'
-                                            }
-                                        }}
-                                    />
-                                }
-                                label={
-                                    <Box>
-                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                            {t("IAgreeToTheTermsAndConditions")}
+                                    {/* Checkboxes Section - Placed after HTML Content */}
+                                    <Box sx={{
+                                        mt: 3,
+                                        p: 3,
+                                        border: '2px solid #274549',
+                                        borderRadius: 2,
+                                        bgcolor: '#f9f9f9',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 2
+                                    }}>
+                                        <Typography variant="h6" sx={{ color: '#274549', fontWeight: 600, mb: 1 }}>
+                                            {t("RequiredAgreements")}
                                         </Typography>
-                                        <Button
-                                            onClick={() => {
-                                                const hasSignedFirstForm = currentPatronNationality === "704" 
-                                                    ? hasAgreedToPersonalNotification 
-                                                    : hasAgreedToNotification;
 
-                                                if (!hasSignedFirstForm) {
-                                                    setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
-                                                    return;
+                                        {/* 1. Personal Notification Checkbox - For Vietnamese */}
+                                        {currentPatronNationality === "704" && (
+                                            <Box sx={{
+                                                p: 2,
+                                                border: '1px solid #e0e0e0',
+                                                borderRadius: 1,
+                                                bgcolor: hasAgreedToPersonalNotification ? '#e8f5e9' : 'white'
+                                            }}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={hasAgreedToPersonalNotification}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    loadPersonalNotification();
+                                                                } else {
+                                                                    setHasAgreedToPersonalNotification(false);
+                                                                }
+                                                            }}
+                                                            sx={{
+                                                                color: '#274549',
+                                                                '&.Mui-checked': {
+                                                                    color: '#4caf50'
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Box>
+                                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                                {t("IAgreeToThePersonalNotification")}
+                                                            </Typography>
+                                                            <Button
+                                                                onClick={() => loadPersonalNotification()}
+                                                                sx={{
+                                                                    textTransform: 'none',
+                                                                    p: 0,
+                                                                    minWidth: 'auto',
+                                                                    color: '#274549',
+                                                                    textDecoration: 'underline',
+                                                                    fontSize: '0.9rem',
+                                                                    '&:hover': {
+                                                                        bgcolor: 'transparent',
+                                                                        textDecoration: 'underline'
+                                                                    }
+                                                                }}
+                                                            >
+                                                                ({t("ViewDocument")})
+                                                            </Button>
+                                                        </Box>
+                                                    }
+                                                />
+                                            </Box>
+                                        )}
+
+                                        {/* 2. Notification Checkbox - For Non-Vietnamese */}
+                                        {currentPatronNationality !== "704" && (
+                                            <Box sx={{
+                                                p: 2,
+                                                border: '1px solid #e0e0e0',
+                                                borderRadius: 1,
+                                                bgcolor: hasAgreedToNotification ? '#e8f5e9' : 'white'
+                                            }}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={hasAgreedToNotification}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    loadNotification();
+                                                                } else {
+                                                                    setHasAgreedToNotification(false);
+                                                                }
+                                                            }}
+                                                            sx={{
+                                                                color: '#274549',
+                                                                '&.Mui-checked': {
+                                                                    color: '#4caf50'
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <Box>
+                                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                                {t("IAgreeToTheNotificationOnPersonalDataProtection")}
+                                                            </Typography>
+                                                            <Button
+                                                                onClick={() => loadNotification()}
+                                                                sx={{
+                                                                    textTransform: 'none',
+                                                                    p: 0,
+                                                                    minWidth: 'auto',
+                                                                    color: '#274549',
+                                                                    textDecoration: 'underline',
+                                                                    fontSize: '0.9rem',
+                                                                    '&:hover': {
+                                                                        bgcolor: 'transparent',
+                                                                        textDecoration: 'underline'
+                                                                    }
+                                                                }}
+                                                            >
+                                                                ({t("ViewDocument")})
+                                                            </Button>
+                                                        </Box>
+                                                    }
+                                                />
+                                            </Box>
+                                        )}
+
+                                        {/* 3. Terms and Conditions Checkbox */}
+                                        <Box sx={{
+                                            p: 2,
+                                            border: '1px solid #e0e0e0',
+                                            borderRadius: 1,
+                                            bgcolor: hasAgreedToTerms ? '#e8f5e9' : 'white',
+                                            opacity: (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
+                                                (currentPatronNationality !== "704" && !hasAgreedToNotification) ? 0.5 : 1
+                                        }}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={hasAgreedToTerms}
+                                                        onChange={(e) => {
+                                                            // Check if first form is signed
+                                                            const hasSignedFirstForm = currentPatronNationality === "704"
+                                                                ? hasAgreedToPersonalNotification
+                                                                : hasAgreedToNotification;
+
+                                                            if (!hasSignedFirstForm) {
+                                                                setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
+                                                                return;
+                                                            }
+
+                                                            if (e.target.checked) {
+                                                                loadTermsAndConditions();
+                                                            } else {
+                                                                setHasAgreedToTerms(false);
+                                                            }
+                                                        }}
+                                                        disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
+                                                            (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                                        sx={{
+                                                            color: '#274549',
+                                                            '&.Mui-checked': {
+                                                                color: '#4caf50'
+                                                            }
+                                                        }}
+                                                    />
                                                 }
-                                                loadTermsAndConditions();
-                                            }}
-                                            disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
-                                                    (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                                label={
+                                                    <Box>
+                                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                            {t("IAgreeToTheTermsAndConditions")}
+                                                        </Typography>
+                                                        <Button
+                                                            onClick={() => {
+                                                                const hasSignedFirstForm = currentPatronNationality === "704"
+                                                                    ? hasAgreedToPersonalNotification
+                                                                    : hasAgreedToNotification;
+
+                                                                if (!hasSignedFirstForm) {
+                                                                    setSignatureError(t("PleaseSignFirstFormBeforeTerms"));
+                                                                    return;
+                                                                }
+                                                                loadTermsAndConditions();
+                                                            }}
+                                                            disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
+                                                                (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                                            sx={{
+                                                                textTransform: 'none',
+                                                                p: 0,
+                                                                minWidth: 'auto',
+                                                                color: '#274549',
+                                                                textDecoration: 'underline',
+                                                                fontSize: '0.9rem',
+                                                                '&:hover': {
+                                                                    bgcolor: 'transparent',
+                                                                    textDecoration: 'underline'
+                                                                }
+                                                            }}
+                                                        >
+                                                            ({t("ViewDocument")})
+                                                        </Button>
+                                                        {((currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
+                                                            (currentPatronNationality !== "704" && !hasAgreedToNotification)) && (
+                                                                <Typography variant="caption" sx={{ display: 'block', color: 'error.main', mt: 0.5 }}>
+                                                                    {t("PleaseSignFirstFormBeforeTerms")}
+                                                                </Typography>
+                                                            )}
+                                                    </Box>
+                                                }
+                                            />
+                                        </Box>
+                                    </Box>
+
+                                    {/* Error Display */}
+                                    {signatureError && (
+                                        <Alert severity="error" sx={{ mt: 2 }}>
+                                            {signatureError}
+                                        </Alert>
+                                    )}
+
+                                    {/* Submit Button */}
+                                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2, paddingBottom: 3 }}>
+                                        <Button
+                                            onClick={handleCloseSignatureDialog}
+                                            disabled={isSubmittingSignature}
+                                            variant="outlined"
+                                            size="large"
                                             sx={{
-                                                textTransform: 'none',
-                                                p: 0,
-                                                minWidth: 'auto',
+                                                border: '1px solid #274549',
                                                 color: '#274549',
-                                                textDecoration: 'underline',
-                                                fontSize: '0.9rem',
+                                                minWidth: 140,
                                                 '&:hover': {
-                                                    bgcolor: 'transparent',
-                                                    textDecoration: 'underline'
+                                                    border: '1px solid #1a3033',
+                                                    bgcolor: 'rgba(39, 69, 73, 0.05)'
                                                 }
                                             }}
                                         >
-                                            ({t("ViewDocument")})
+                                            {t("Cancel")}
                                         </Button>
-                                        {((currentPatronNationality === "704" && !hasAgreedToPersonalNotification) || 
-                                          (currentPatronNationality !== "704" && !hasAgreedToNotification)) && (
-                                            <Typography variant="caption" sx={{ display: 'block', color: 'error.main', mt: 0.5 }}>
-                                                {t("PleaseSignFirstFormBeforeTerms")}
-                                            </Typography>
-                                        )}
+                                        <Button
+                                            onClick={handleSubmitCanvasSignature}
+                                            disabled={
+                                                isSubmittingSignature ||
+                                                !hasAgreedToTerms ||
+                                                isExpired ||
+                                                (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
+                                                (currentPatronNationality !== "704" && !hasAgreedToNotification)
+                                            }
+                                            variant="contained"
+                                            size="large"
+                                            startIcon={<Send />}
+                                            sx={{
+                                                backgroundColor: '#274549',
+                                                minWidth: 140,
+                                                '&:hover': {
+                                                    backgroundColor: '#1a3033'
+                                                }
+                                            }}
+                                        >
+                                            {isSubmittingSignature ? t("Submitting") : t("SubmitSignature")}
+                                        </Button>
                                     </Box>
-                                }
-                            />
-                        </Box>
-                    </Box>
-
-                    {/* Error Display */}
-                    {signatureError && (
-                        <Alert severity="error" sx={{ mt: 2 }}>
-                            {signatureError}
-                        </Alert>
-                    )}
-
-                    {/* Submit Button */}
-                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-                        <Button
-                            onClick={handleCloseSignatureDialog}
-                            disabled={isSubmittingSignature}
-                            variant="outlined"
-                            size="large"
-                            sx={{
-                                border: '1px solid #274549',
-                                color: '#274549',
-                                minWidth: 140,
-                                '&:hover': {
-                                    border: '1px solid #1a3033',
-                                    bgcolor: 'rgba(39, 69, 73, 0.05)'
-                                }
-                            }}
-                        >
-                            {t("Cancel")}
-                        </Button>
-                        <Button
-                            onClick={handleSubmitCanvasSignature}
-                            disabled={
-                                isSubmittingSignature || 
-                                !hasAgreedToTerms || 
-                                isExpired ||
-                                (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
-                                (currentPatronNationality !== "704" && !hasAgreedToNotification)
-                            }
-                            variant="contained"
-                            size="large"
-                            startIcon={<Send />}
-                            sx={{
-                                backgroundColor: '#274549',
-                                minWidth: 140,
-                                '&:hover': {
-                                    backgroundColor: '#1a3033'
-                                }
-                            }}
-                        >
-                            {isSubmittingSignature ? t("Submitting") : t("SubmitSignature")}
-                        </Button>
-                    </Box>
-                </Box>
+                                </Box>
                             </>
                         ) : null}
                     </DialogContent>
