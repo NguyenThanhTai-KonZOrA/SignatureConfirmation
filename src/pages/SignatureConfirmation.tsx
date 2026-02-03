@@ -1025,8 +1025,8 @@ export default function SignatureConfirmation() {
                     disableEscapeKeyDown={isSubmittingSignature}
                     PaperProps={{
                         sx: {
-                            height: isMobile ? '100vh' : '90vh',
-                            maxHeight: isMobile ? '100vh' : '90vh',
+                            height: isMobile ? '90vh' : '90vh',
+                            maxHeight: isMobile ? '90vh' : '90vh',
                             display: 'flex',
                             flexDirection: 'column',
                             m: isMobile ? 0 : 2

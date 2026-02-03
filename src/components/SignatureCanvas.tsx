@@ -47,10 +47,10 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
             // Responsive sizing based on screen size - use more of available width
             if (isMobile) {
                 newWidth = containerWidth - 16; // Full width minus padding
-                newHeight = 120; // Smaller height for mobile
+                newHeight = 220; // Smaller height for mobile
             } else if (isTablet) {
                 newWidth = containerWidth - 16; // Full width minus padding
-                newHeight = 140; // Smaller height for tablet/iPad
+                newHeight = 240; // Smaller height for tablet/iPad
             } else {
                 newWidth = containerWidth - 16; // Full width minus padding
                 newHeight = height || 180; // Smaller default height
