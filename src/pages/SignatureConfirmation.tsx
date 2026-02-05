@@ -83,6 +83,7 @@ export default function SignatureConfirmation() {
     const [termsContent, setTermsContent] = useState<string>('');
     const [isLoadingTerms, setIsLoadingTerms] = useState(false);
     const [hasAgreedToTerms, setHasAgreedToTerms] = useState(false);
+    const [hasScrolledToBottomTerms, setHasScrolledToBottomTerms] = useState(false);
 
     // Notification states
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
@@ -353,6 +354,7 @@ export default function SignatureConfirmation() {
     const loadTermsAndConditions = async () => {
         setIsLoadingTerms(true);
         setTermsDialogOpen(true);
+        setHasScrolledToBottomTerms(false);
         try {
             console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
             let request = {
@@ -383,10 +385,20 @@ export default function SignatureConfirmation() {
         }
     };
 
+    // Handle scroll in Terms and Conditions dialog
+    const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLDivElement;
+        const bottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 5; // 5px threshold
+        if (bottom) {
+            setHasScrolledToBottomTerms(true);
+        }
+    };
+
     // Handle agree to terms
     const handleAgreeToTerms = () => {
         setHasAgreedToTerms(true);
         setTermsDialogOpen(false);
+        setHasScrolledToBottomTerms(false); // Reset for next time
     };
 
     // Handle agree to notification on personal data protection
@@ -526,10 +538,12 @@ export default function SignatureConfirmation() {
                 console.log('✅ Canvas signature submitted successfully:', response);
                 handleSignatureSubmitted(currentSignatureData.sessionId);
                 setSignatureDialogOpen(false);
+                setHasScrolledToBottomTerms(false);
             } else {
                 const errorMsg = response?.message || 'Failed to submit signature';
                 setSignatureError(errorMsg);
                 handleSignatureError(errorMsg);
+                setHasScrolledToBottomTerms(false);
             }
 
         } catch (error) {
@@ -546,6 +560,7 @@ export default function SignatureConfirmation() {
             handleSignatureError(errorMessage);
         } finally {
             setIsSubmittingSignature(false);
+            setHasScrolledToBottomTerms(false);
         }
     };
 
@@ -553,6 +568,7 @@ export default function SignatureConfirmation() {
         if (!isSubmittingSignature) {
             setSignatureDialogOpen(false);
             setCurrentSignatureData(null);
+            setHasScrolledToBottomTerms(false);
         }
     };
 
@@ -1339,7 +1355,10 @@ export default function SignatureConfirmation() {
                                     {/* Submit Button */}
                                     <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2, paddingBottom: 3 }}>
                                         <Button
-                                            onClick={handleCloseSignatureDialog}
+                                            onClick={() => {
+                                                handleCloseSignatureDialog();
+                                                setHasScrolledToBottomTerms(false);
+                                            }}
                                             disabled={isSubmittingSignature}
                                             variant="outlined"
                                             size="large"
@@ -1387,7 +1406,10 @@ export default function SignatureConfirmation() {
                 {/* Terms and Conditions Dialog */}
                 <Dialog
                     open={termsDialogOpen}
-                    onClose={() => setTermsDialogOpen(false)}
+                    onClose={() => {
+                        setTermsDialogOpen(false);
+                        setHasScrolledToBottomTerms(false);
+                    }}
                     maxWidth="md"
                     fullWidth
                     fullScreen={isMobile}
@@ -1415,7 +1437,10 @@ export default function SignatureConfirmation() {
                             <Typography variant="h6">{t("TermsAndConditions")}</Typography>
                         </Box>
                         <Button
-                            onClick={() => setTermsDialogOpen(false)}
+                            onClick={() => {
+                                setTermsDialogOpen(false);
+                                setHasScrolledToBottomTerms(false);
+                            }}
                             sx={{
                                 minWidth: 'auto',
                                 p: 1,
@@ -1429,14 +1454,17 @@ export default function SignatureConfirmation() {
                         </Button>
                     </DialogTitle>
 
-                    <DialogContent sx={{
-                        pt: 2,
-                        pb: 2,
-                        flex: 1,
-                        overflow: 'auto',
-                        display: 'flex',
-                        flexDirection: 'column'
-                    }}>
+                    <DialogContent
+                        onScroll={handleTermsScroll}
+                        sx={{
+                            pt: 2,
+                            pb: 2,
+                            flex: 1,
+                            overflow: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column'
+                        }}
+                    >
                         {isLoadingTerms ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
                                 <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
@@ -1477,36 +1505,64 @@ export default function SignatureConfirmation() {
                     <DialogActions sx={{
                         p: 2,
                         borderTop: '1px solid #e0e0e0',
-                        bgcolor: '#f9f9f9'
+                        bgcolor: '#f9f9f9',
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
+                        gap: 1
                     }}>
-                        <Button
-                            onClick={() => setTermsDialogOpen(false)}
-                            variant="outlined"
-                            sx={{
-                                border: '1px solid #274549',
-                                color: '#274549',
-                                '&:hover': {
-                                    border: '1px solid #1a3033',
-                                    bgcolor: 'rgba(39, 69, 73, 0.05)'
-                                }
-                            }}
-                        >
-                            {t("Cancel")}
-                        </Button>
-                        <Button
-                            onClick={handleAgreeToTerms}
-                            variant="contained"
-                            disabled={isLoadingTerms}
-                            startIcon={<CheckCircle />}
-                            sx={{
-                                backgroundColor: '#274549',
-                                '&:hover': {
-                                    backgroundColor: '#1a3033'
-                                }
-                            }}
-                        >
-                            {t("AgreeAndContinue")}
-                        </Button>
+                        {!hasScrolledToBottomTerms && !isLoadingTerms && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: 'warning.main',
+                                    textAlign: 'center',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 0.5
+                                }}
+                            >
+                                {t("PleaseScrollToBottom") || "Please scroll to the bottom to continue"}
+                            </Typography>
+                        )}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                            <Button
+                                onClick={() => {
+                                    setTermsDialogOpen(false);
+                                    setHasScrolledToBottomTerms(false);
+                                }}
+                                variant="outlined"
+                                sx={{
+                                    border: '1px solid #274549',
+                                    color: '#274549',
+                                    '&:hover': {
+                                        border: '1px solid #1a3033',
+                                        bgcolor: 'rgba(39, 69, 73, 0.05)'
+                                    }
+                                }}
+                            >
+                                {t("Cancel")}
+                            </Button>
+                            <Button
+                                onClick={handleAgreeToTerms}
+                                variant="contained"
+                                disabled={isLoadingTerms || !hasScrolledToBottomTerms}
+                                startIcon={<CheckCircle />}
+                                sx={{
+                                    backgroundColor: '#274549',
+                                    '&:hover': {
+                                        backgroundColor: '#1a3033'
+                                    },
+                                    '&.Mui-disabled': {
+                                        bgcolor: '#cccccc',
+                                        color: '#666666'
+                                    }
+                                }}
+                            >
+                                {t("AgreeAndContinue")}
+                            </Button>
+                        </Box>
                     </DialogActions>
                 </Dialog>
 
@@ -1630,6 +1686,7 @@ export default function SignatureConfirmation() {
                             onClick={() => {
                                 setNotificationDialogOpen(false);
                                 setCanvasSignature(null);
+                                setHasScrolledToBottomTerms(false);
                             }}
                             variant="outlined"
                             sx={{
@@ -1780,6 +1837,7 @@ export default function SignatureConfirmation() {
                             onClick={() => {
                                 setPersonalNotificationDialogOpen(false);
                                 setCanvasSignature(null);
+                                setHasScrolledToBottomTerms(false);
                             }}
                             variant="outlined"
                             sx={{
