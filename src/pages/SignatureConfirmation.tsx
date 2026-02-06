@@ -566,10 +566,13 @@ export default function SignatureConfirmation() {
     };
 
     const handleCloseSignatureDialog = () => {
+        setHasScrolledToBottomTerms(false);
+        setHasAgreedToNotification(false);
+        setHasAgreedToPersonalNotification(false);
         if (!isSubmittingSignature) {
             setSignatureDialogOpen(false);
             setCurrentSignatureData(null);
-            setHasScrolledToBottomTerms(false);
+
         }
     };
 
@@ -1364,7 +1367,6 @@ export default function SignatureConfirmation() {
                                         <Button
                                             onClick={() => {
                                                 handleCloseSignatureDialog();
-                                                setHasScrolledToBottomTerms(false);
                                             }}
                                             disabled={isSubmittingSignature}
                                             variant="outlined"
@@ -1608,6 +1610,8 @@ export default function SignatureConfirmation() {
                                 setNotificationDialogOpen(false);
                                 setCanvasSignature(null);
                                 setHasScrolledToBottomTerms(false);
+                                setHasAgreedToNotification(false);
+                                setHasAgreedToPersonalNotification(false);
                             }}
                             sx={{
                                 minWidth: 'auto',
@@ -1698,6 +1702,8 @@ export default function SignatureConfirmation() {
                                 setNotificationDialogOpen(false);
                                 setCanvasSignature(null);
                                 setHasScrolledToBottomTerms(false);
+                                setHasAgreedToNotification(false);
+                                setHasAgreedToPersonalNotification(false);
                             }}
                             variant="outlined"
                             sx={{
@@ -1731,7 +1737,13 @@ export default function SignatureConfirmation() {
                 {/* Personal Notification Dialog */}
                 <Dialog
                     open={personalNotificationDialogOpen}
-                    onClose={() => setPersonalNotificationDialogOpen(false)}
+                    onClose={() => {
+                        setPersonalNotificationDialogOpen(false);
+                        setCanvasSignature(null);
+                        setHasScrolledToBottomTerms(false);
+                        setHasAgreedToNotification(false);
+                        setHasAgreedToPersonalNotification(false);
+                    }}
                     maxWidth="md"
                     fullWidth
                     fullScreen={isMobile}
@@ -1763,6 +1775,8 @@ export default function SignatureConfirmation() {
                                 setPersonalNotificationDialogOpen(false);
                                 setCanvasSignature(null);
                                 setHasScrolledToBottomTerms(false);
+                                setHasAgreedToNotification(false);
+                                setHasAgreedToPersonalNotification(false);
                             }}
                             sx={{
                                 minWidth: 'auto',
@@ -1853,6 +1867,8 @@ export default function SignatureConfirmation() {
                                 setPersonalNotificationDialogOpen(false);
                                 setCanvasSignature(null);
                                 setHasScrolledToBottomTerms(false);
+                                setHasAgreedToNotification(false);
+                                setHasAgreedToPersonalNotification(false);
                             }}
                             variant="outlined"
                             sx={{
