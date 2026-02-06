@@ -68,6 +68,7 @@ const stepProgress = {
 };
 
 export default function SignatureConfirmation() {
+    const VIETNAM_COUNTRY_ID = '704';
     const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
     const [currentSignatureData, setCurrentSignatureData] = useState<SignatureMessageData | null>(null);
     const [canvasSignature, setCanvasSignature] = useState<string | null>(null);
@@ -255,7 +256,7 @@ export default function SignatureConfirmation() {
 
             // Auto change language based on patron nationality
             let realNationality = 'en';
-            if (data && data.patronData && data.patronData.nationality === "704") {
+            if (data && data.patronData && data.patronData.nationality === VIETNAM_COUNTRY_ID) {
                 // Vietnam nationality - switch to Vietnamese
                 console.log('🇻🇳 Patron is Vietnamese - switching to Vietnamese language');
                 setCurrentPatronNationality(data.patronData.nationality);
@@ -500,7 +501,7 @@ export default function SignatureConfirmation() {
         }
 
         // Check if first form is signed
-        const hasSignedFirstForm = currentPatronNationality === "704"
+        const hasSignedFirstForm = currentPatronNationality === VIETNAM_COUNTRY_ID
             ? hasAgreedToPersonalNotification
             : hasAgreedToNotification;
 
@@ -1150,7 +1151,7 @@ export default function SignatureConfirmation() {
                                         </Typography>
 
                                         {/* 1. Personal Notification Checkbox - For Vietnamese */}
-                                        {currentPatronNationality === "704" && (
+                                        {currentPatronNationality === VIETNAM_COUNTRY_ID && (
                                             <Box sx={{
                                                 p: 2,
                                                 border: '1px solid #e0e0e0',
@@ -1166,6 +1167,9 @@ export default function SignatureConfirmation() {
                                                                     loadPersonalNotification();
                                                                 } else {
                                                                     setHasAgreedToPersonalNotification(false);
+                                                                    setNotificationDialogOpen(false);
+                                                                    setCanvasSignature(null);
+                                                                    setHasScrolledToBottomTerms(false);
                                                                 }
                                                             }}
                                                             sx={{
@@ -1205,7 +1209,7 @@ export default function SignatureConfirmation() {
                                         )}
 
                                         {/* 2. Notification Checkbox - For Non-Vietnamese */}
-                                        {currentPatronNationality !== "704" && (
+                                        {currentPatronNationality !== VIETNAM_COUNTRY_ID && (
                                             <Box sx={{
                                                 p: 2,
                                                 border: '1px solid #e0e0e0',
@@ -1221,6 +1225,9 @@ export default function SignatureConfirmation() {
                                                                     loadNotification();
                                                                 } else {
                                                                     setHasAgreedToNotification(false);
+                                                                    setNotificationDialogOpen(false);
+                                                                    setCanvasSignature(null);
+                                                                    setHasScrolledToBottomTerms(false);
                                                                 }
                                                             }}
                                                             sx={{
@@ -1265,8 +1272,8 @@ export default function SignatureConfirmation() {
                                             border: '1px solid #e0e0e0',
                                             borderRadius: 1,
                                             bgcolor: hasAgreedToTerms ? '#e8f5e9' : 'white',
-                                            opacity: (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
-                                                (currentPatronNationality !== "704" && !hasAgreedToNotification) ? 0.5 : 1
+                                            opacity: (currentPatronNationality === VIETNAM_COUNTRY_ID && !hasAgreedToPersonalNotification) ||
+                                                (currentPatronNationality !== VIETNAM_COUNTRY_ID && !hasAgreedToNotification) ? 0.5 : 1
                                         }}>
                                             <FormControlLabel
                                                 control={
@@ -1274,7 +1281,7 @@ export default function SignatureConfirmation() {
                                                         checked={hasAgreedToTerms}
                                                         onChange={(e) => {
                                                             // Check if first form is signed
-                                                            const hasSignedFirstForm = currentPatronNationality === "704"
+                                                            const hasSignedFirstForm = currentPatronNationality === VIETNAM_COUNTRY_ID
                                                                 ? hasAgreedToPersonalNotification
                                                                 : hasAgreedToNotification;
 
@@ -1289,8 +1296,8 @@ export default function SignatureConfirmation() {
                                                                 setHasAgreedToTerms(false);
                                                             }
                                                         }}
-                                                        disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
-                                                            (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                                        disabled={(currentPatronNationality === VIETNAM_COUNTRY_ID && !hasAgreedToPersonalNotification) ||
+                                                            (currentPatronNationality !== VIETNAM_COUNTRY_ID && !hasAgreedToNotification)}
                                                         sx={{
                                                             color: '#274549',
                                                             '&.Mui-checked': {
@@ -1306,7 +1313,7 @@ export default function SignatureConfirmation() {
                                                         </Typography>
                                                         <Button
                                                             onClick={() => {
-                                                                const hasSignedFirstForm = currentPatronNationality === "704"
+                                                                const hasSignedFirstForm = currentPatronNationality === VIETNAM_COUNTRY_ID
                                                                     ? hasAgreedToPersonalNotification
                                                                     : hasAgreedToNotification;
 
@@ -1316,8 +1323,8 @@ export default function SignatureConfirmation() {
                                                                 }
                                                                 loadTermsAndConditions();
                                                             }}
-                                                            disabled={(currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
-                                                                (currentPatronNationality !== "704" && !hasAgreedToNotification)}
+                                                            disabled={(currentPatronNationality === VIETNAM_COUNTRY_ID && !hasAgreedToPersonalNotification) ||
+                                                                (currentPatronNationality !== VIETNAM_COUNTRY_ID && !hasAgreedToNotification)}
                                                             sx={{
                                                                 textTransform: 'none',
                                                                 p: 0,
@@ -1333,8 +1340,8 @@ export default function SignatureConfirmation() {
                                                         >
                                                             ({t("ViewDocument")})
                                                         </Button>
-                                                        {((currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
-                                                            (currentPatronNationality !== "704" && !hasAgreedToNotification)) && (
+                                                        {((currentPatronNationality === VIETNAM_COUNTRY_ID && !hasAgreedToPersonalNotification) ||
+                                                            (currentPatronNationality !== VIETNAM_COUNTRY_ID && !hasAgreedToNotification)) && (
                                                                 <Typography variant="caption" sx={{ display: 'block', color: 'error.main', mt: 0.5 }}>
                                                                     {t("PleaseSignFirstFormBeforeTerms")}
                                                                 </Typography>
@@ -1380,8 +1387,8 @@ export default function SignatureConfirmation() {
                                                 isSubmittingSignature ||
                                                 !hasAgreedToTerms ||
                                                 isExpired ||
-                                                (currentPatronNationality === "704" && !hasAgreedToPersonalNotification) ||
-                                                (currentPatronNationality !== "704" && !hasAgreedToNotification)
+                                                (currentPatronNationality === VIETNAM_COUNTRY_ID && !hasAgreedToPersonalNotification) ||
+                                                (currentPatronNationality !== VIETNAM_COUNTRY_ID && !hasAgreedToNotification)
                                             }
                                             variant="contained"
                                             size="large"
@@ -1597,7 +1604,11 @@ export default function SignatureConfirmation() {
                             <Typography variant="h6">{t("NotificationOnPersonalDataProtection")}</Typography>
                         </Box>
                         <Button
-                            onClick={() => setNotificationDialogOpen(false)}
+                            onClick={() => {
+                                setNotificationDialogOpen(false);
+                                setCanvasSignature(null);
+                                setHasScrolledToBottomTerms(false);
+                            }}
                             sx={{
                                 minWidth: 'auto',
                                 p: 1,
@@ -1748,7 +1759,11 @@ export default function SignatureConfirmation() {
                             <Typography variant="h6">{t("PersonalNotification")}</Typography>
                         </Box>
                         <Button
-                            onClick={() => setPersonalNotificationDialogOpen(false)}
+                            onClick={() => {
+                                setPersonalNotificationDialogOpen(false);
+                                setCanvasSignature(null);
+                                setHasScrolledToBottomTerms(false);
+                            }}
                             sx={{
                                 minWidth: 'auto',
                                 p: 1,
