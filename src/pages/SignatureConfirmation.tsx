@@ -1608,10 +1608,10 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={() => {
                                 setNotificationDialogOpen(false);
-                                setCanvasSignature(null);
-                                setHasScrolledToBottomTerms(false);
-                                setHasAgreedToNotification(false);
-                                setHasAgreedToPersonalNotification(false);
+                                // setCanvasSignature(null);
+                                // setHasScrolledToBottomTerms(false);
+                                // setHasAgreedToNotification(false);
+                                // setHasAgreedToPersonalNotification(false);
                             }}
                             sx={{
                                 minWidth: 'auto',
@@ -1739,10 +1739,10 @@ export default function SignatureConfirmation() {
                     open={personalNotificationDialogOpen}
                     onClose={() => {
                         setPersonalNotificationDialogOpen(false);
-                        setCanvasSignature(null);
-                        setHasScrolledToBottomTerms(false);
-                        setHasAgreedToNotification(false);
-                        setHasAgreedToPersonalNotification(false);
+                        // setCanvasSignature(null);
+                        // setHasScrolledToBottomTerms(false);
+                        // setHasAgreedToNotification(false);
+                        // setHasAgreedToPersonalNotification(false);
                     }}
                     maxWidth="md"
                     fullWidth
@@ -1773,10 +1773,10 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={() => {
                                 setPersonalNotificationDialogOpen(false);
-                                setCanvasSignature(null);
-                                setHasScrolledToBottomTerms(false);
-                                setHasAgreedToNotification(false);
-                                setHasAgreedToPersonalNotification(false);
+                                // setCanvasSignature(null);
+                                // setHasScrolledToBottomTerms(false);
+                                // setHasAgreedToNotification(false);
+                                // setHasAgreedToPersonalNotification(false);
                             }}
                             sx={{
                                 minWidth: 'auto',
