@@ -18,7 +18,8 @@ import {
     useTheme,
     useMediaQuery,
     Checkbox,
-    FormControlLabel
+    FormControlLabel,
+    CircularProgress
 } from '@mui/material';
 import {
     Person,
@@ -43,6 +44,7 @@ import { useSignatureRequest } from '../hooks/useSignatureRequest';
 import { SignatureCanvas } from '../components/SignatureCanvas';
 import { signatureApiService } from '../services/signatureApiService';
 import type { SignatureMessageData, SignatureConfirmRequest, DeviceMappingResponse } from '../type';
+import { DocumentTypes } from '../type';
 import { useTranslation } from 'react-i18next';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import NetworkAlert from '../components/NetworkAlert';
@@ -85,18 +87,27 @@ export default function SignatureConfirmation() {
     const [isLoadingTerms, setIsLoadingTerms] = useState(false);
     const [hasAgreedToTerms, setHasAgreedToTerms] = useState(false);
     const [hasScrolledToBottomTerms, setHasScrolledToBottomTerms] = useState(false);
+    const [termsSignature, setTermsSignature] = useState<string | null>(null);
+    const [isSubmittingTermsSignature, setIsSubmittingTermsSignature] = useState(false);
+    const [termsError, setTermsError] = useState<string | null>(null);
 
     // Notification states
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
     const [notificationContent, setNotificationContent] = useState<string>('');
     const [isLoadingNotification, setIsLoadingNotification] = useState(false);
     const [hasAgreedToNotification, setHasAgreedToNotification] = useState(false);
+    const [notificationSignature, setNotificationSignature] = useState<string | null>(null);
+    const [isSubmittingNotificationSignature, setIsSubmittingNotificationSignature] = useState(false);
+    const [notificationError, setNotificationError] = useState<string | null>(null);
 
     // Personal Notification states
     const [personalNotificationDialogOpen, setPersonalNotificationDialogOpen] = useState(false);
     const [personalNotificationContent, setPersonalNotificationContent] = useState<string>('');
     const [isLoadingPersonalNotification, setIsLoadingPersonalNotification] = useState(false);
     const [hasAgreedToPersonalNotification, setHasAgreedToPersonalNotification] = useState(false);
+    const [personalNotificationSignature, setPersonalNotificationSignature] = useState<string | null>(null);
+    const [isSubmittingPersonalNotificationSignature, setIsSubmittingPersonalNotificationSignature] = useState(false);
+    const [personalNotificationError, setPersonalNotificationError] = useState<string | null>(null);
 
     // Current Patron nationality
     const [currentPatronNationality, setCurrentPatronNationality] = useState<string>('');
@@ -348,6 +359,15 @@ export default function SignatureConfirmation() {
             setHasAgreedToTerms(false);
             setHasAgreedToNotification(false);
             setHasAgreedToPersonalNotification(false);
+            setNotificationSignature(null);
+            setPersonalNotificationSignature(null);
+            setTermsSignature(null);
+            setNotificationError(null);
+            setPersonalNotificationError(null);
+            setTermsError(null);
+            setIsSubmittingNotificationSignature(false);
+            setIsSubmittingPersonalNotificationSignature(false);
+            setIsSubmittingTermsSignature(false);
         }
     }, [signatureDialogOpen]);
 
@@ -356,12 +376,14 @@ export default function SignatureConfirmation() {
         setIsLoadingTerms(true);
         setTermsDialogOpen(true);
         setHasScrolledToBottomTerms(false);
+        setTermsSignature(null);
+        setTermsError(null);
         try {
             console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
             let request = {
                 Lang: selectedLanguage,
                 PatronId: currentSignatureData?.patronId || 0,
-                SignatureDataUrl: canvasSignature || ''
+                SignatureDataUrl: termsSignature || ''
             };
             const response = await signatureApiService.getTermsAndConditionsV2(request);
             console.log('✅ Terms and conditions response:', response);
@@ -401,12 +423,12 @@ export default function SignatureConfirmation() {
         setTermsDialogOpen(false);
         setHasScrolledToBottomTerms(false); // Reset for next time
     };
-
-    // Handle agree to notification on personal data protection
     // Load Notification
     const loadNotification = async () => {
         setIsLoadingNotification(true);
         setNotificationDialogOpen(true);
+        setNotificationError(null);
+        setNotificationSignature(null);
         try {
             console.log('🔄 Fetching notification for language:', selectedLanguage);
             let request = {
@@ -437,16 +459,45 @@ export default function SignatureConfirmation() {
         }
     };
 
-    // Handle agree to notification on personal data protection
-    const handleAgreeToNotification = () => {
-        setHasAgreedToNotification(true);
-        setNotificationDialogOpen(false);
+    const handleAgreeToNotification = async () => {
+        if (!currentSignatureData || !notificationSignature) {
+            setNotificationError(t('Please provide your signature'));
+            return;
+        }
+
+        setIsSubmittingNotificationSignature(true);
+        setNotificationError(null);
+
+        try {
+            const response = await signatureApiService.submitPdpOrHtpNotificationSignature({
+                patronId: currentSignatureData.patronId,
+                signature: notificationSignature,
+                staffDeviceId: currentSignatureData.staffDeviceId,
+                documentType: DocumentTypes.PDPNotification
+            });
+
+            if (response) {
+                setHasAgreedToNotification(true);
+                setNotificationDialogOpen(false);
+                setNotificationSignature(null);
+                setCanvasSignature(notificationSignature);
+            } else {
+                setNotificationError(t('Failed to submit signature'));
+            }
+        } catch (error) {
+            console.error('❌ Error submitting notification signature:', error);
+            setNotificationError(t('Failed to submit signature'));
+        } finally {
+            setIsSubmittingNotificationSignature(false);
+        }
     };
 
     // Handle load personal Notification
     const loadPersonalNotification = async () => {
         setIsLoadingPersonalNotification(true);
         setPersonalNotificationDialogOpen(true);
+        setPersonalNotificationError(null);
+        setPersonalNotificationSignature(null);
         try {
             console.log('🔄 Fetching personal notification for language:', selectedLanguage);
             let request = {
@@ -477,10 +528,37 @@ export default function SignatureConfirmation() {
         }
     };
 
-    // Handle agree to notification on personal data protection
-    const handleAgreeToPersonalNotification = () => {
-        setHasAgreedToPersonalNotification(true);
-        setPersonalNotificationDialogOpen(false);
+    const handleAgreeToPersonalNotification = async () => {
+        if (!currentSignatureData || !personalNotificationSignature) {
+            setPersonalNotificationError(t('Please provide your signature'));
+            return;
+        }
+
+        setIsSubmittingPersonalNotificationSignature(true);
+        setPersonalNotificationError(null);
+
+        try {
+            const response = await signatureApiService.submitPdpOrHtpNotificationSignature({
+                patronId: currentSignatureData.patronId,
+                signature: personalNotificationSignature,
+                staffDeviceId: currentSignatureData.staffDeviceId,
+                documentType: DocumentTypes.HTPConfirmation
+            });
+
+            if (response) {
+                setHasAgreedToPersonalNotification(true);
+                setPersonalNotificationDialogOpen(false);
+                setPersonalNotificationSignature(null);
+                setCanvasSignature(personalNotificationSignature);
+            } else {
+                setPersonalNotificationError(t('Failed to submit signature'));
+            }
+        } catch (error) {
+            console.error('❌ Error submitting personal notification signature:', error);
+            setPersonalNotificationError(t('Failed to submit signature'));
+        } finally {
+            setIsSubmittingPersonalNotificationSignature(false);
+        }
     };
 
     const formatTimeLeft = (seconds: number): string => {
@@ -489,9 +567,19 @@ export default function SignatureConfirmation() {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const handleCanvasSignatureChange = (signature: string | null) => {
-        setCanvasSignature(signature);
-        setSignatureError(null);
+    const handleNotificationSignatureChange = (signature: string | null) => {
+        setNotificationSignature(signature);
+        setNotificationError(null);
+    };
+
+    const handlePersonalNotificationSignatureChange = (signature: string | null) => {
+        setPersonalNotificationSignature(signature);
+        setPersonalNotificationError(null);
+    };
+
+    const handleTermsSignatureChange = (signature: string | null) => {
+        setTermsSignature(signature);
+        setTermsError(null);
     };
 
     const handleSubmitCanvasSignature = async () => {
@@ -520,6 +608,16 @@ export default function SignatureConfirmation() {
             return;
         }
 
+        if (!currentSignatureData || !termsSignature) {
+            setTermsError(t('Please provide your signature'));
+            return;
+        }
+
+        if (!hasScrolledToBottomTerms) {
+            setTermsError(t('Please scroll to the bottom to continue'));
+            return;
+        }
+
         setIsSubmittingSignature(true);
         setSignatureError(null);
 
@@ -527,8 +625,9 @@ export default function SignatureConfirmation() {
             const request: SignatureConfirmRequest = {
                 sessionId: currentSignatureData.sessionId,
                 patronId: currentSignatureData.patronId,
-                signature: canvasSignature, // Send canvas data
-                staffDeviceId: currentSignatureData.staffDeviceId
+                signature: termsSignature,
+                staffDeviceId: currentSignatureData.staffDeviceId,
+                documentType: DocumentTypes.HTRMembershipTerms
             };
 
             console.log('🔄 Submitting canvas signature:', request);
@@ -577,6 +676,50 @@ export default function SignatureConfirmation() {
     };
 
     const isExpired = timeLeft !== null && timeLeft <= 0;
+
+    const handleSubmitTermsSignature = async () => {
+        if (!currentSignatureData || !termsSignature) {
+            setTermsError(t('Please provide your signature'));
+            return;
+        }
+
+        if (!hasScrolledToBottomTerms) {
+            setTermsError(t('Please scroll to the bottom to continue'));
+            return;
+        }
+
+        setIsSubmittingTermsSignature(true);
+        setTermsError(null);
+
+        try {
+            const request: SignatureConfirmRequest = {
+                sessionId: currentSignatureData.sessionId,
+                patronId: currentSignatureData.patronId,
+                signature: termsSignature,
+                staffDeviceId: currentSignatureData.staffDeviceId,
+                documentType: DocumentTypes.HTRMembershipTerms
+            };
+
+            console.log('🔄 Submitting terms signature:', request);
+
+            const response = await signatureApiService.submitSignature(request);
+
+            if (response && response.success) {
+                setHasAgreedToTerms(true);
+                setTermsDialogOpen(false);
+                setHasScrolledToBottomTerms(false);
+                setTermsSignature(null);
+            } else {
+                const errorMsg = response?.message || t('Failed to submit signature');
+                setTermsError(errorMsg);
+            }
+        } catch (error) {
+            console.error('❌ Error submitting terms signature:', error);
+            setTermsError(t('Failed to submit signature'));
+        } finally {
+            setIsSubmittingTermsSignature(false);
+        }
+    };
 
     // Debug logging for dialog rendering
     useEffect(() => {
@@ -1038,7 +1181,13 @@ export default function SignatureConfirmation() {
                 {/* Signature Dialog with Canvas */}
                 <Dialog
                     open={signatureDialogOpen}
-                    onClose={handleCloseSignatureDialog}
+                    onClose={(_event, reason) => {
+                        // Only allow closing via button clicks, not backdrop or escape key
+                        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+                            return;
+                        }
+                        handleCloseSignatureDialog();
+                    }}
                     maxWidth="lg"
                     fullWidth
                     fullScreen={isMobile}
@@ -1415,9 +1564,14 @@ export default function SignatureConfirmation() {
                 {/* Terms and Conditions Dialog */}
                 <Dialog
                     open={termsDialogOpen}
-                    onClose={() => {
+                    onClose={(_event, reason) => {
+                        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+                            return;
+                        }
                         setTermsDialogOpen(false);
                         setHasScrolledToBottomTerms(false);
+                        // setTermsSignature(null);
+                        // setTermsError(null);
                     }}
                     maxWidth="md"
                     fullWidth
@@ -1449,6 +1603,8 @@ export default function SignatureConfirmation() {
                             onClick={() => {
                                 setTermsDialogOpen(false);
                                 setHasScrolledToBottomTerms(false);
+                                // setTermsSignature(null);
+                                // setTermsError(null);
                             }}
                             sx={{
                                 minWidth: 'auto',
@@ -1509,6 +1665,32 @@ export default function SignatureConfirmation() {
                                 dangerouslySetInnerHTML={{ __html: termsContent }}
                             />
                         )}
+
+                        {!isLoadingTerms && (
+                            <Box sx={{ mt: 3 }}>
+                                <Box sx={{
+                                    p: 2,
+                                    border: '2px solid #274549',
+                                    borderRadius: 2,
+                                    bgcolor: '#f9f9f9'
+                                }}>
+                                    <Typography variant="h6" sx={{ mb: 2, color: '#274549', fontWeight: 600 }}>
+                                        ✍️ {t("PleaseSignBelow")}
+                                    </Typography>
+                                    <SignatureCanvas
+                                        width={isMobile ? 340 : 600}
+                                        height={isMobile ? 120 : 180}
+                                        onSignatureChange={handleTermsSignatureChange}
+                                        disabled={isSubmittingTermsSignature}
+                                    />
+                                </Box>
+                                {termsError && (
+                                    <Alert severity="error" sx={{ mt: 2 }}>
+                                        {termsError}
+                                    </Alert>
+                                )}
+                            </Box>
+                        )}
                     </DialogContent>
 
                     <DialogActions sx={{
@@ -1540,6 +1722,8 @@ export default function SignatureConfirmation() {
                                 onClick={() => {
                                     setTermsDialogOpen(false);
                                     setHasScrolledToBottomTerms(false);
+                                    setTermsSignature(null);
+                                    setTermsError(null);
                                 }}
                                 variant="outlined"
                                 sx={{
@@ -1578,7 +1762,14 @@ export default function SignatureConfirmation() {
                 {/* Notification Dialog */}
                 <Dialog
                     open={notificationDialogOpen}
-                    onClose={() => setNotificationDialogOpen(false)}
+                    onClose={(_event, reason) => {
+                        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+                            return;
+                        }
+                        setNotificationDialogOpen(false);
+                        // setNotificationSignature(null);
+                        // setNotificationError(null);
+                    }}
                     maxWidth="md"
                     fullWidth
                     fullScreen={isMobile}
@@ -1608,6 +1799,8 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={() => {
                                 setNotificationDialogOpen(false);
+                                setNotificationSignature(null);
+                                setNotificationError(null);
                                 // setCanvasSignature(null);
                                 // setHasScrolledToBottomTerms(false);
                                 // setHasAgreedToNotification(false);
@@ -1684,10 +1877,16 @@ export default function SignatureConfirmation() {
                                     <SignatureCanvas
                                         width={isMobile ? 340 : 600}
                                         height={isMobile ? 120 : 180}
-                                        onSignatureChange={handleCanvasSignatureChange}
-                                        disabled={false}
+                                        onSignatureChange={handleNotificationSignatureChange}
+                                        disabled={isSubmittingNotificationSignature}
                                     />
                                 </Box>
+
+                                {notificationError && (
+                                    <Alert severity="error" sx={{ mt: 2 }}>
+                                        {notificationError}
+                                    </Alert>
+                                )}
                             </>
                         )}
                     </DialogContent>
@@ -1701,6 +1900,8 @@ export default function SignatureConfirmation() {
                             onClick={() => {
                                 setNotificationDialogOpen(false);
                                 setCanvasSignature(null);
+                                setNotificationSignature(null);
+                                setNotificationError(null);
                                 setHasScrolledToBottomTerms(false);
                                 setHasAgreedToNotification(false);
                                 setHasAgreedToPersonalNotification(false);
@@ -1720,8 +1921,8 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={handleAgreeToNotification}
                             variant="contained"
-                            disabled={isLoadingNotification || !canvasSignature}
-                            startIcon={<CheckCircle />}
+                            disabled={isLoadingNotification || isSubmittingNotificationSignature || !notificationSignature}
+                            startIcon={isSubmittingNotificationSignature ? <CircularProgress size={16} /> : <CheckCircle />}
                             sx={{
                                 backgroundColor: '#274549',
                                 '&:hover': {
@@ -1729,7 +1930,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            {t("SignAndAgree")}
+                            {isSubmittingNotificationSignature ? t("Submitting") : t("SignAndAgree")}
                         </Button>
                     </DialogActions>
                 </Dialog>
@@ -1737,8 +1938,13 @@ export default function SignatureConfirmation() {
                 {/* Personal Notification Dialog */}
                 <Dialog
                     open={personalNotificationDialogOpen}
-                    onClose={() => {
+                    onClose={(_event, reason) => {
+                        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+                            return;
+                        }
                         setPersonalNotificationDialogOpen(false);
+                        setPersonalNotificationSignature(null);
+                        setPersonalNotificationError(null);
                         // setCanvasSignature(null);
                         // setHasScrolledToBottomTerms(false);
                         // setHasAgreedToNotification(false);
@@ -1773,6 +1979,8 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={() => {
                                 setPersonalNotificationDialogOpen(false);
+                                setPersonalNotificationSignature(null);
+                                setPersonalNotificationError(null);
                                 // setCanvasSignature(null);
                                 // setHasScrolledToBottomTerms(false);
                                 // setHasAgreedToNotification(false);
@@ -1849,10 +2057,16 @@ export default function SignatureConfirmation() {
                                     <SignatureCanvas
                                         width={isMobile ? 340 : 600}
                                         height={isMobile ? 120 : 180}
-                                        onSignatureChange={handleCanvasSignatureChange}
-                                        disabled={false}
+                                        onSignatureChange={handlePersonalNotificationSignatureChange}
+                                        disabled={isSubmittingPersonalNotificationSignature}
                                     />
                                 </Box>
+
+                                {personalNotificationError && (
+                                    <Alert severity="error" sx={{ mt: 2 }}>
+                                        {personalNotificationError}
+                                    </Alert>
+                                )}
                             </>
                         )}
                     </DialogContent>
@@ -1866,6 +2080,8 @@ export default function SignatureConfirmation() {
                             onClick={() => {
                                 setPersonalNotificationDialogOpen(false);
                                 setCanvasSignature(null);
+                                setPersonalNotificationSignature(null);
+                                setPersonalNotificationError(null);
                                 setHasScrolledToBottomTerms(false);
                                 setHasAgreedToNotification(false);
                                 setHasAgreedToPersonalNotification(false);
@@ -1885,8 +2101,8 @@ export default function SignatureConfirmation() {
                         <Button
                             onClick={handleAgreeToPersonalNotification}
                             variant="contained"
-                            disabled={isLoadingPersonalNotification || !canvasSignature}
-                            startIcon={<CheckCircle />}
+                            disabled={isLoadingPersonalNotification || isSubmittingPersonalNotificationSignature || !personalNotificationSignature}
+                            startIcon={isSubmittingPersonalNotificationSignature ? <CircularProgress size={16} /> : <CheckCircle />}
                             sx={{
                                 backgroundColor: '#274549',
                                 '&:hover': {
@@ -1894,7 +2110,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            {t("SignAndAgree")}
+                            {isSubmittingPersonalNotificationSignature ? t("Submitting") : t("SignAndAgree")}
                         </Button>
                     </DialogActions>
                 </Dialog>

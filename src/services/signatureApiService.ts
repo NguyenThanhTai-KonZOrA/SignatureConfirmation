@@ -6,6 +6,7 @@ import type {
     GetNotificationRequest,
     GetNotificationResponse,
     GetTermsResponse,
+    NotificationConfirmRequest,
     RegisterDeviceRequest,
     RegisterDeviceResponse,
     ReviewableSignatureResponse,
@@ -184,6 +185,16 @@ export const signatureApiService = {
             return unwrapApiEnvelope(response);
         } catch (error) {
             console.error('Error fetching patron device information:', error);
+            throw error;
+        }
+    },
+
+    submitPdpOrHtpNotificationSignature: async (data: NotificationConfirmRequest): Promise<boolean> => {
+        try {
+            const response = await api.post('/api/CustomerSign/submit-notification-signature', data);
+            return unwrapApiEnvelope(response);
+        } catch (error) {
+            console.error('Error submitting notification signature:', error);
             throw error;
         }
     }

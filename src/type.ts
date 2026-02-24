@@ -125,6 +125,7 @@ export interface SignatureConfirmRequest {
     patronId: number;
     signature: string;
     staffDeviceId: string;
+    documentType: number;
 }
 
 export interface SignatureConfirmResponse {
@@ -177,3 +178,17 @@ export interface StaffDeviceData {
     isOnline: boolean;
     IsAvailable: boolean;
 }
+
+export interface NotificationConfirmRequest {
+    patronId: number;
+    signature: string;
+    staffDeviceId: string;
+    documentType: number;
+}
+
+export const DocumentTypes = {
+    HTRForm: 1,
+    PDPNotification: 2,
+    HTPConfirmation: 3,
+    HTRMembershipTerms: 4
+};

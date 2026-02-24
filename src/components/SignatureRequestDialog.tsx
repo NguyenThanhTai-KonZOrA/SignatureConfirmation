@@ -117,16 +117,17 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
                 sessionId: data.sessionId,
                 patronId: data.patronId,
                 signature: signature.trim(),
-                staffDeviceId: data.staffDeviceId
+                staffDeviceId: data.staffDeviceId,
+                documentType: parseInt(data.documentType, 10) || 0
             };
 
             console.log('🔄 Submitting signature request:', request);
-            
+
             const response = await signatureApiService.submitSignature(request);
-            
+
             console.log('📥 Full API response:', response);
             console.log('📥 Response success:', response?.success);
-            
+
             // Always check response exists first
             if (!response) {
                 throw new Error('No response received from API');
@@ -135,10 +136,10 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
             // Check success field explicitly
             if (response.success === true) {
                 console.log('✅ Signature submitted successfully:', response);
-                
+
                 // Mark as submitted
                 setIsSubmitted(true);
-                
+
                 // Notify success callback first
                 if (onSubmitted) {
                     try {
@@ -147,13 +148,13 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
                         console.warn('⚠️ onSubmitted callback error:', callbackError);
                     }
                 }
-                
+
                 // Force close dialog after short delay to ensure state updates
                 setTimeout(() => {
                     console.log('🔒 Forcing dialog close');
                     onClose();
                 }, 100);
-                
+
             } else {
                 const errorMsg = response.message || `API returned success=${response.success}`;
                 console.log('❌ API returned non-success:', errorMsg, response);
@@ -177,7 +178,7 @@ export const SignatureRequestDialog: React.FC<SignatureRequestDialogProps> = ({
 
     const handleClose = useCallback(() => {
         console.log('🚪 Handle close called', { isSubmitting, isSubmitted });
-        
+
         // Allow force close if submitted successfully or not submitting
         if (!isSubmitting || isSubmitted) {
             console.log('🚪 Closing dialog');
