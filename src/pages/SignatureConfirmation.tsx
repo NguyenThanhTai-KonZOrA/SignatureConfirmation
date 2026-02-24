@@ -376,8 +376,6 @@ export default function SignatureConfirmation() {
         setIsLoadingTerms(true);
         setTermsDialogOpen(true);
         setHasScrolledToBottomTerms(false);
-        setTermsSignature(null);
-        setTermsError(null);
         try {
             console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
             let request = {
@@ -1571,7 +1569,7 @@ export default function SignatureConfirmation() {
                         setTermsDialogOpen(false);
                         setHasScrolledToBottomTerms(false);
                         // setTermsSignature(null);
-                        // setTermsError(null);
+                        setTermsError(null);
                     }}
                     maxWidth="md"
                     fullWidth
@@ -1604,7 +1602,7 @@ export default function SignatureConfirmation() {
                                 setTermsDialogOpen(false);
                                 setHasScrolledToBottomTerms(false);
                                 // setTermsSignature(null);
-                                // setTermsError(null);
+                                setTermsError(null);
                             }}
                             sx={{
                                 minWidth: 'auto',
@@ -1722,6 +1720,7 @@ export default function SignatureConfirmation() {
                                 onClick={() => {
                                     setTermsDialogOpen(false);
                                     setHasScrolledToBottomTerms(false);
+                                    setHasAgreedToTerms(false);
                                     setTermsSignature(null);
                                     setTermsError(null);
                                 }}
@@ -1740,7 +1739,7 @@ export default function SignatureConfirmation() {
                             <Button
                                 onClick={handleAgreeToTerms}
                                 variant="contained"
-                                disabled={isLoadingTerms || !hasScrolledToBottomTerms}
+                                disabled={isLoadingTerms || !hasScrolledToBottomTerms || isSubmittingTermsSignature || !termsSignature}
                                 startIcon={<CheckCircle />}
                                 sx={{
                                     backgroundColor: '#274549',
