@@ -88,6 +88,7 @@ export default function SignatureConfirmation() {
     const [hasAgreedToTerms, setHasAgreedToTerms] = useState(false);
     const [hasScrolledToBottomTerms, setHasScrolledToBottomTerms] = useState(false);
     const [termsSignature, setTermsSignature] = useState<string | null>(null);
+    const [confirmedTermsSignature, setConfirmedTermsSignature] = useState<string | null>(null);
     const [isSubmittingTermsSignature, setIsSubmittingTermsSignature] = useState(false);
     const [termsError, setTermsError] = useState<string | null>(null);
 
@@ -376,12 +377,14 @@ export default function SignatureConfirmation() {
         setIsLoadingTerms(true);
         setTermsDialogOpen(true);
         setHasScrolledToBottomTerms(false);
+        // Initialize with confirmed signature when opening dialog
+        setTermsSignature(confirmedTermsSignature);
         try {
             console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
             let request = {
                 Lang: selectedLanguage,
                 PatronId: currentSignatureData?.patronId || 0,
-                SignatureDataUrl: termsSignature || ''
+                SignatureDataUrl: confirmedTermsSignature || ''
             };
             const response = await signatureApiService.getTermsAndConditionsV2(request);
             console.log('✅ Terms and conditions response:', response);
@@ -418,6 +421,8 @@ export default function SignatureConfirmation() {
     // Handle agree to terms
     const handleAgreeToTerms = () => {
         setHasAgreedToTerms(true);
+        // Save confirmed signature when user agrees
+        setConfirmedTermsSignature(termsSignature);
         setTermsDialogOpen(false);
         setHasScrolledToBottomTerms(false); // Reset for next time
     };
@@ -1568,7 +1573,8 @@ export default function SignatureConfirmation() {
                         }
                         setTermsDialogOpen(false);
                         setHasScrolledToBottomTerms(false);
-                        // setTermsSignature(null);
+                        // Restore confirmed signature when closing without agreeing
+                        setTermsSignature(confirmedTermsSignature);
                         setTermsError(null);
                     }}
                     maxWidth="md"
@@ -1601,7 +1607,8 @@ export default function SignatureConfirmation() {
                             onClick={() => {
                                 setTermsDialogOpen(false);
                                 setHasScrolledToBottomTerms(false);
-                                // setTermsSignature(null);
+                                // Restore confirmed signature when closing without agreeing
+                                setTermsSignature(confirmedTermsSignature);
                                 setTermsError(null);
                             }}
                             sx={{
@@ -1721,7 +1728,8 @@ export default function SignatureConfirmation() {
                                     setTermsDialogOpen(false);
                                     setHasScrolledToBottomTerms(false);
                                     setHasAgreedToTerms(false);
-                                    setTermsSignature(null);
+                                    // Restore confirmed signature when canceling
+                                    setTermsSignature(confirmedTermsSignature);
                                     setTermsError(null);
                                 }}
                                 variant="outlined"
