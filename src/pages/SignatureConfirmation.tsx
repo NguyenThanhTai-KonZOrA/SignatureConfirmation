@@ -378,7 +378,14 @@ export default function SignatureConfirmation() {
         setTermsDialogOpen(true);
         setHasScrolledToBottomTerms(false);
         // Initialize with confirmed signature when opening dialog
-        setTermsSignature(confirmedTermsSignature);
+        debugger;
+        if (hasAgreedToTerms) {
+            setTermsSignature(confirmedTermsSignature);
+        } else {
+            setTermsSignature(null);
+            setConfirmedTermsSignature(null);
+        }
+
         try {
             console.log('🔄 Fetching terms and conditions for language:', selectedLanguage);
             let request = {
@@ -616,10 +623,10 @@ export default function SignatureConfirmation() {
             return;
         }
 
-        if (!hasScrolledToBottomTerms) {
-            setTermsError(t('Please scroll to the bottom to continue'));
-            return;
-        }
+        // if (!hasScrolledToBottomTerms) {
+        //     setTermsError(t('Please scroll to the bottom to continue'));
+        //     return;
+        // }
 
         setIsSubmittingSignature(true);
         setSignatureError(null);
@@ -1449,6 +1456,8 @@ export default function SignatureConfirmation() {
                                                                 loadTermsAndConditions();
                                                             } else {
                                                                 setHasAgreedToTerms(false);
+                                                                setConfirmedTermsSignature(null);
+                                                                setTermsSignature(null);
                                                             }
                                                         }}
                                                         disabled={(currentPatronNationality === VIETNAM_COUNTRY_ID && !hasAgreedToPersonalNotification) ||
@@ -1729,7 +1738,8 @@ export default function SignatureConfirmation() {
                                     setHasScrolledToBottomTerms(false);
                                     setHasAgreedToTerms(false);
                                     // Restore confirmed signature when canceling
-                                    setTermsSignature(confirmedTermsSignature);
+                                    setTermsSignature(null);
+                                    setConfirmedTermsSignature(null);
                                     setTermsError(null);
                                 }}
                                 variant="outlined"
