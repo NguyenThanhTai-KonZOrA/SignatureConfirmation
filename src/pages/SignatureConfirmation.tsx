@@ -369,6 +369,7 @@ export default function SignatureConfirmation() {
             setIsSubmittingNotificationSignature(false);
             setIsSubmittingPersonalNotificationSignature(false);
             setIsSubmittingTermsSignature(false);
+            setConfirmedTermsSignature(null);
         }
     }, [signatureDialogOpen]);
 
@@ -378,12 +379,12 @@ export default function SignatureConfirmation() {
         setTermsDialogOpen(true);
         setHasScrolledToBottomTerms(false);
         // Initialize with confirmed signature when opening dialog
-        debugger;
         if (hasAgreedToTerms) {
             setTermsSignature(confirmedTermsSignature);
         } else {
             setTermsSignature(null);
             setConfirmedTermsSignature(null);
+            console.log(confirmedTermsSignature);
         }
 
         try {
@@ -719,6 +720,8 @@ export default function SignatureConfirmation() {
                 setTermsDialogOpen(false);
                 setHasScrolledToBottomTerms(false);
                 setTermsSignature(null);
+                setConfirmedTermsSignature(null);
+                setTermsError(null);
             } else {
                 const errorMsg = response?.message || t('Failed to submit signature');
                 setTermsError(errorMsg);
@@ -1752,7 +1755,7 @@ export default function SignatureConfirmation() {
                                     }
                                 }}
                             >
-                                {t("Cancel")}
+                                {t("CancelSignature")}
                             </Button>
                             <Button
                                 onClick={handleAgreeToTerms}
@@ -1933,7 +1936,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            {t("Cancel")}
+                            {t("CancelSignature")}
                         </Button>
                         <Button
                             onClick={handleAgreeToNotification}
@@ -2113,7 +2116,7 @@ export default function SignatureConfirmation() {
                                 }
                             }}
                         >
-                            {t("Cancel")}
+                            {t("CancelSignature")}
                         </Button>
                         <Button
                             onClick={handleAgreeToPersonalNotification}
